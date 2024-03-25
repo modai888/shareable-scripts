@@ -1,5 +1,5 @@
 {
-  "name": "@maltose/eslint-config",
+  "name": "@maltose888/eslint-config",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
@@ -24,6 +24,6 @@
     "read-pkg-up": "7.0.1"
   },
   "devDependencies": {
-    "@maltose/common-scripts": "workspace:^"
+    "@maltose888/common-scripts": "workspace:^"
   }
 }

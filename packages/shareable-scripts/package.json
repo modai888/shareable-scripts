@@ -1,5 +1,5 @@
 {
-  "name": "@maltose/shareable-scripts",
+  "name": "@maltose888/shareable-scripts",
   "version": "0.1.0",
   "description": "支持脚本共享",
   "main": "dist/cjs/index.js",

@@ -11,8 +11,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@maltose/common-scripts": "workspace:^",
-    "@maltose/shareable-scripts": "workspace:^",
+    "@maltose888/common-scripts": "workspace:^",
+    "@maltose888/shareable-scripts": "workspace:^",
     "usage-demo": "workspace:^"
   },
   "dependencies": {

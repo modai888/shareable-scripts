@@ -22,12 +22,12 @@ try {
 
 module.exports = {
   extends: [
-    require.resolve('@maltose/eslint-config'),
-    require.resolve('@maltose/eslint-config/jest'),
+    require.resolve('@maltose888/eslint-config'),
+    require.resolve('@maltose888/eslint-config/jest'),
 
-    hasReactDep ? require.resolve('@maltose/eslint-config/react') : null,
-    hasReactDep ? require.resolve('@maltose/eslint-config/jsx-a11y') : null,
-    require.resolve('@maltose/eslint-config/prettier'),
+    hasReactDep ? require.resolve('@maltose888/eslint-config/react') : null,
+    hasReactDep ? require.resolve('@maltose888/eslint-config/jsx-a11y') : null,
+    require.resolve('@maltose888/eslint-config/prettier'),
   ].filter(Boolean),
 
   rules: {

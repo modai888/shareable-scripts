@@ -1,5 +1,5 @@
 {
-  "name": "@maltose/common-scripts",
+  "name": "@maltose888/common-scripts",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
@@ -22,7 +22,7 @@
     "@babel/cli": "^7.23.9",
     "@babel/core": "^7.24.0",
     "@babel/preset-env": "^7.24.0",
-    "@maltose/eslint-config": "workspace:^",
+    "@maltose888/eslint-config": "workspace:^",
     "check-engines": "^1.6.0",
     "eslint": "^8.57.0",
     "execa": "^8.0.1",
@@ -33,7 +33,7 @@
     "semver": "^7.6.0"
   },
   "devDependencies": {
-    "@maltose/shareable-scripts": "workspace:^",
+    "@maltose888/shareable-scripts": "workspace:^",
     "yargs": "^17.7.2",
     "yargs-parser": "^21.1.1"
   },
