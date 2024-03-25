@@ -1,0 +1,22 @@
+{
+  "name": "usage-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "files": [
+    "scripts.config.js"
+  ],
+  "scripts": {
+    "format": "shareable-scripts format --log-level debug sample-scripts src",
+    "lint": "shareable-scripts lint-es",
+    "debug": "npm run format",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@maltose/common-scripts": "workspace:^",
+    "@maltose/shareable-scripts": "workspace:^"
+  }
+}

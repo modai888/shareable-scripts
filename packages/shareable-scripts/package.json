@@ -1,0 +1,40 @@
+{
+  "name": "@maltose/shareable-scripts",
+  "version": "1.0.0",
+  "description": "支持脚本共享",
+  "main": "dist/cjs/index.js",
+  "type": "module",
+  "bin": {
+    "shareable-scripts": "lib/esm/run.js"
+  },
+  "files": [
+    "/lib",
+    "/bin"
+  ],
+  "scripts": {
+    "build": "pnpm clean && pnpm build:tsc:esm",
+    "build:tsc:esm": "tsc -p tsconfig.json -t esnext --module esnext --outDir lib/esm",
+    "build:tsc:cjs": "tsc -p tsconfig.json -t es2020 --module commonjs --outDir lib/cjs",
+    "format": "node bin/scripts format",
+    "clean": "rimraf -rf lib",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^20.11.26",
+    "@types/yargs": "^17.0.32",
+    "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "find-up": "^7.0.0",
+    "tslib": "^2.6.2",
+    "yargs": "^17.7.2"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

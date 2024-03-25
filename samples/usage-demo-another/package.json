@@ -1,0 +1,21 @@
+{
+  "name": "usage-demo-another",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "debug": "share-scripts --help",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@maltose/common-scripts": "workspace:^",
+    "@maltose/shareable-scripts": "workspace:^",
+    "usage-demo": "workspace:^"
+  },
+  "dependencies": {
+    "big.js": "^6.2.1"
+  }
+}
