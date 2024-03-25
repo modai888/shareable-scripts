@@ -9,7 +9,8 @@
     "format:shareable-scripts": "pnpm shareable-scripts format ./packages/shareable-scripts/src",
     "lint:shareable-scripts": "pnpm shareable-scripts lint-es --config ./eslintrc.cjs ./packages/shareable-scripts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "shareable-scripts prepare"
+    "prepare": "shareable-scripts prepare",
+    "publish": "pnpm run --stream -r --filter @maltose/* publish"
   },
   "keywords": [],
   "author": "",
