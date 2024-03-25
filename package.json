@@ -10,7 +10,7 @@
     "lint:shareable-scripts": "pnpm shareable-scripts lint-es --config ./eslintrc.cjs ./packages/shareable-scripts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "shareable-scripts prepare",
-    "publish": "pnpm run --stream -r --filter @maltose888/* publish"
+    "public": "pnpm --stream -r --filter @maltose888/* publish --access public"
   },
   "keywords": [],
   "author": "",
