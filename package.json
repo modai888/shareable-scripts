@@ -1,0 +1,28 @@
+{
+  "name": "shareable-scripts",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "pnpm run --stream -r build",
+    "clean:node_modules": "pnpm -r --stream exec rimraf -rf node_modules",
+    "format:shareable-scripts": "pnpm shareable-scripts format ./packages/shareable-scripts/src",
+    "lint:shareable-scripts": "pnpm shareable-scripts lint-es --config ./eslintrc.cjs ./packages/shareable-scripts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "shareable-scripts prepare"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@8.15.4+sha256.cea6d0bdf2de3a0549582da3983c70c92ffc577ff4410cbf190817ddc35137c2",
+  "devDependencies": {
+    "@maltose/common-scripts": "workspace:^",
+    "@maltose/shareable-scripts": "workspace:^",
+    "husky": "^9.0.11",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.13.0"
+  },
+  "engines": {
+    "git": ">=2.9"
+  }
+}
