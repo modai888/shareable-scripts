@@ -56,6 +56,9 @@ importers:
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
+      read-pkg-up:
+        specifier: 7.0.1
+        version: 7.0.1
       semver:
         specifier: ^7.6.0
         version: 7.6.0

@@ -1,6 +1,6 @@
 {
   "name": "@maltose/shareable-scripts",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "支持脚本共享",
   "main": "dist/cjs/index.js",
   "type": "module",
