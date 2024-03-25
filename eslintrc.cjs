@@ -3,7 +3,7 @@
  * @date 2024/03/21
  * @description eslint config
  */
-const config = require('@maltose/common-scripts/lib/config/eslint.cjs');
+const config = require('@maltose888/common-scripts/lib/config/eslint.cjs');
 
 module.exports = {
   root: true,

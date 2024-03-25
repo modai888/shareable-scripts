@@ -5,7 +5,7 @@
  */
 
 export default {
-  extends: ['@maltose/common-scripts/scripts.config.js'],
+  extends: ['@maltose888/common-scripts/scripts.config.js'],
   //   scripts: {
   //     format2: {
   //       description: "format your code",
