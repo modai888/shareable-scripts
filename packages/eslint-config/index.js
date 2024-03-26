@@ -16,7 +16,6 @@ module.exports = {
   env: {
     browser: true,
     node: true,
-    // es2020: true,
     es2024: true,
   },
   extends: ['eslint:recommended'],
@@ -27,9 +26,6 @@ module.exports = {
 
   overrides: [
     {
-      env: {
-        es2022: true,
-      },
       files: ['**/*.ts?(x)'],
       parser: '@typescript-eslint/parser',
       parserOptions: {
