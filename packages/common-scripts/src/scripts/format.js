@@ -4,6 +4,7 @@
  * @description 代码风格格式化
  */
 /* eslint no-unused-vars: "warn" */
+import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 import { $, execa } from 'execa';
@@ -51,21 +52,60 @@ const command = {
   },
 
   handler: async (argv) => {
-    const useUserConfig = argv.config || pkg.hasFieldKey('perttier') || hasUserConfig();
-    const config = useUserConfig ? [] : ['--config', hereRelative('../config/prettier.cjs')];
+    let args = process.argv.slice(3);
 
-    const useUserIgnoreConfig = argv['ignore-path'] || hasUserIgnoreConfig();
-    const ignore = useUserIgnoreConfig ? [] : ['--ignore-path', hereRelative('../config/prettierignore')];
+    const params = [];
 
-    const noWrite = argv.write == false || argv['no-write'];
-    const write = noWrite ? [] : ['--write'];
+    // files
+    {
+      if (argv.files.length) {
+        args = args.filter((a) => !argv.files.includes(a));
+      }
 
-    const filesToApply = argv.files.length
-      ? []
-      : ['**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)'];
+      const findConfigPath = argv.findConfigPath || argv['find-config-path'];
+      const files = findConfigPath
+        ? []
+        : argv.files.length
+          ? [...argv.files]
+          : ['**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)'];
+
+      params.push(...files);
+    }
+
+    // --config
+    {
+      const noConfig = argv.config === false || argv['no-config'];
+      const useUserConfig = argv.config || pkg.hasFieldKey('perttier') || hasUserConfig();
+      params.push(...(useUserConfig || noConfig ? [] : ['--config', hereRelative('../config/prettier.cjs')]));
+    }
+
+    // --ignore-path
+    {
+      const useUserIgnoreConfig = argv['ignore-path'] || hasUserIgnoreConfig();
+      // const ignore = useUserIgnoreConfig ? [] : ['--ignore-path', hereRelative('../config/prettierignore')];
+      //   params.push(...(useUserIgnoreConfig ? [] : ['--ignore-path', hereRelative('../config/prettierignore')]));
+      if (!useUserIgnoreConfig) {
+        params.push('--ignore-path', hereRelative('../config/prettierignore'));
+
+        const gitignore = path.resolve('.gitignore');
+        if (fs.existsSync(gitignore)) {
+          params.push('--ignore-path', rootRelative('.gitignore'));
+        }
+      }
+    }
+
+    // --write
+    {
+      const noWrite = argv.write == false || argv['no-write'];
+      const debugCheck = argv.debugCheck || argv['debug-check'];
+      const write = noWrite || debugCheck != null ? [] : ['--write'];
+
+      params.push(...write);
+    }
 
     // 其他参数
-    const args = process.argv.slice(3).map((arg) => arg.replace(`${process.cwd()}/`, ''));
+    // const args = process.argv.slice(3).map((arg) => arg.replace(`${process.cwd()}/`, ''));
+    params.push(...args.map((arg) => arg.replace(`${process.cwd()}/`, '')));
 
     // await execa('where', ['prettier'], {
     //   preferLocal: true,
@@ -76,7 +116,7 @@ const command = {
     //   stdout: process.stdout,
     // });
 
-    await execa('prettier', [...config, ...ignore, ...write, ...filesToApply].concat(args), {
+    await execa('prettier', params, {
       verbose: true,
       preferLocal: true,
       localDir: path.resolve(__dirname, '../..'),

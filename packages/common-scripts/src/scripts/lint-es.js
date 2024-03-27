@@ -21,7 +21,6 @@ try {
 
 const here = (p) => path.join(__dirname, p);
 const hereRelative = (p) => here(p).replace(process.cwd(), '.');
-
 const rootRelative = (p) => path.resolve(p).replace(process.cwd(), '.');
 
 const existUserConfig = () =>
@@ -40,17 +39,23 @@ const command = {
   },
 
   handler: async (argv) => {
-    let args = process.argv.slice(3);
+    let params = [];
 
-    const params = [];
+    let files = argv.files;
+    let args = process.argv.slice(3).filter((a) => !files.includes(a));
 
     // --config
+    // --resolve-plugins-relative-to
     {
       const useUserConfig = argv.config || pkg.hasFieldKey('eslintConfig') || existUserConfig();
       // --no-eslintrc
       const noEslintrc = argv.eslintrc === false || argv['no-eslintrc'];
 
       params.push(...(useUserConfig ? [] : ['--config', hereRelative('../config/eslint.cjs')]));
+
+      if (!argv['resolve-plugins-relative-to']) {
+        params.push('--resolve-plugins-relative-to', hereRelative('../config'));
+      }
     }
 
     // --ignore-path
@@ -61,7 +66,13 @@ const command = {
 
     // --ext
     {
-      params.push(...(argv.ext ? [] : ['--ext', 'js,jsx,ts,tsx']));
+      const extensions = (argv.ext || 'js,jsx,ts,tsx').split(',');
+
+      if (files.length) {
+        files = files.filter((a) => extensions.some((e) => a.endsWith(e)));
+      }
+
+      params.push(...(argv.ext ? [] : ['--ext', extensions.join(',')]));
     }
 
     // --cache
@@ -74,26 +85,15 @@ const command = {
       }
     }
 
+    // 其他参数
+    params.push(...args.map((a) => a.replace(`${process.cwd()}/`, '')));
+
+    // files
     // --print-config
     {
       const printConfig = argv.printConfig || argv['print-config'];
 
-      if (printConfig !== undefined && argv.files.length) {
-        // 剔除需要检查的文件或目录
-        args = args.filter((a) => !argv.files.includes(a));
-      }
-    }
-
-    // 其他参数
-    // params.push(...args.map((arg) => arg.replace(`${process.cwd()}/`, '')));
-    if (argv.files.length) {
-      const extensions = (argv.ext || 'js,jsx,ts,tsx').split(',');
-      params.push(...args.filter((a) => !argv.files.includes(a) || extensions.some((e) => a.endsWith(e))));
-    }
-
-    // files...
-    {
-      params.push(...(argv.files.length ? [] : ['.']));
+      params.push(...(printConfig ? [] : files.length ? [...files] : ['.']));
     }
 
     await execa('eslint', params, {

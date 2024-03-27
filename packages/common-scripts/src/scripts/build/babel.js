@@ -23,6 +23,7 @@ const run = async (argv) => {
   const args = process.argv.slice(3).map((arg) => arg.replace(`${process.cwd()}/`, ''));
 
   return execa('babel', [...config, ...outDir, 'src'].concat(args), {
+    verbose: true,
     stderr: process.stderr,
     stdin: process.stdin,
     stdout: process.stdout,

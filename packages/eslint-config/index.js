@@ -16,7 +16,7 @@ module.exports = {
   env: {
     browser: true,
     node: true,
-    es2020: true,
+    es2024: true,
   },
   extends: ['eslint:recommended'],
   parserOptions: {
@@ -26,9 +26,6 @@ module.exports = {
 
   overrides: [
     {
-      env: {
-        es2020: true,
-      },
       files: ['**/*.ts?(x)'],
       parser: '@typescript-eslint/parser',
       parserOptions: {
@@ -36,7 +33,7 @@ module.exports = {
         project: tsconfig,
       },
       plugins: ['@typescript-eslint'],
-      extends: [/*'eslint:recommended',*/ 'plugin:@typescript-eslint/recommended'],
+      extends: ['plugin:@typescript-eslint/recommended'],
       rules: {},
     },
   ],
