@@ -41,7 +41,7 @@ const command = {
   handler: async (argv) => {
     let params = [];
 
-    let files = argv.files;
+    let files = [...argv.files];
     let args = process.argv.slice(3).filter((a) => !files.includes(a));
 
     // --config
@@ -69,7 +69,8 @@ const command = {
       const extensions = (argv.ext || 'js,jsx,ts,tsx').split(',');
 
       if (files.length) {
-        files = files.filter((a) => extensions.some((e) => a.endsWith(e)));
+        // 目录及文件
+        files = files.filter((a) => !path.extname(a) || extensions.some((e) => a.endsWith(e)));
       }
 
       params.push(...(argv.ext ? [] : ['--ext', extensions.join(',')]));
@@ -92,8 +93,9 @@ const command = {
     // --print-config
     {
       const printConfig = argv.printConfig || argv['print-config'];
-
-      params.push(...(printConfig ? [] : files.length ? [...files] : ['.']));
+      // 如果files为空，但argv.files不为空，说明files里的文件已经被extensions过滤了
+      const notMatchedFiles = !files.length && argv.files.length;
+      params.push(...(printConfig || notMatchedFiles ? [] : files.length ? [...files] : ['.']));
     }
 
     await execa('eslint', params, {
