@@ -39,8 +39,10 @@ const command = {
   },
 
   handler: async (argv) => {
-    let args = process.argv.slice(3);
     let params = [];
+
+    let files = argv.files;
+    let args = process.argv.slice(3).filter((a) => !files.includes(a));
 
     // --config
     // --resolve-plugins-relative-to
@@ -66,13 +68,11 @@ const command = {
     {
       const extensions = (argv.ext || 'js,jsx,ts,tsx').split(',');
 
-      args = args.filter((a) => !argv.files.includes(a) || extensions.some((e) => a.endsWith(e)));
+      if (files.length) {
+        files = files.filter((a) => extensions.some((e) => a.endsWith(e)));
+      }
 
-      //   if (argv.files.length) {
-      //     params = params.filter((a) => extensions.some((e) => a.endsWith(e)));
-      //   }
-
-      params.push(...(argv.ext ? [] : ['--ext', 'js,jsx,ts,tsx']));
+      params.push(...(argv.ext ? [] : ['--ext', extensions.join(',')]));
     }
 
     // --cache
@@ -91,16 +91,9 @@ const command = {
     // files
     // --print-config
     {
-      //   if (argv.files.length) {
-      //     args = args.filter((a) => !argv.files.includes(a));
-      //   }
-
-      // --print-config
       const printConfig = argv.printConfig || argv['print-config'];
 
-      const files = printConfig ? [] : argv.files.length ? [...argv.files] : ['.'];
-
-      params.push(...files);
+      params.push(...(printConfig ? [] : files.length ? [...files] : ['.']));
     }
 
     await execa('eslint', params, {
