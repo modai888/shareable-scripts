@@ -1,0 +1,36 @@
+{
+  "name": "@shareable-scripts/core",
+  "version": "0.1.2",
+  "description": "可共享脚本运行框架",
+  "main": "lib/index.js",
+  "type": "module",
+  "files": [
+    "lib"
+  ],
+  "exports": {
+    "default": "./lib/index.js"
+  },
+  "scripts": {
+    "build": "rimraf -rf lib && tsc -p tsconfig.json -t esnext --module esnext --outDir lib",
+    "format": "node bin/scripts format",
+    "debug": "node --import=./register.js src/run.ts",
+    "clean": "rimraf -rf lib"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "find-up": "^7.0.0",
+    "resolve-package-path": "^4.0.3",
+    "write-json-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.26",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.2"
+  }
+}
