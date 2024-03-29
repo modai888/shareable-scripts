@@ -1,6 +1,6 @@
 {
-  "name": "@maltose888/eslint-config",
-  "version": "0.1.1",
+  "name": "@shareable-scripts/eslint-config",
+  "version": "0.1.2",
   "description": "",
   "main": "index.js",
   "type": "commonjs",
@@ -24,6 +24,6 @@
     "read-pkg-up": "7.0.1"
   },
   "devDependencies": {
-    "@maltose888/common-scripts": "workspace:^"
+    "@shareable-scripts/common-scripts": "workspace:^"
   }
 }
