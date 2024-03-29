@@ -6,12 +6,12 @@
   "configurations": [
     {
       "name": "shareable-scripts",
+      "program": "src/cli.ts",
+      "runtimeArgs": ["--import", "./register.js"],
       "request": "launch",
-      "runtimeArgs": ["run-script", "debug"],
-      "runtimeExecutable": "npm",
       "skipFiles": ["<node_internals>/**"],
       "type": "node",
-      "cwd": "${workspaceFolder}/samples/usage-demo"
+      "cwd": "${workspaceFolder}/packages/cli"
     },
 
     {
@@ -22,6 +22,16 @@
       "skipFiles": ["<node_internals>/**"],
       "type": "node",
       "cwd": "${workspaceFolder}/packages/common-scripts"
+    },
+
+    {
+      "name": "sample-scripts",
+      "request": "launch",
+      "runtimeArgs": ["run-script", "npm-script:debug"],
+      "runtimeExecutable": "npm",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node",
+      "cwd": "${workspaceFolder}/samples/usage-demo"
     },
 
     {

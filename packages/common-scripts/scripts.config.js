@@ -5,16 +5,28 @@
  */
 import prepare from './lib/scripts/prepare.js';
 import build from './lib/scripts/build.js';
-import format from './lib/scripts/format.js';
-import lintForES from './lib/scripts/lint-es.js';
-import precommint from './lib/scripts/pre-commit.js';
 
 export default {
-  scripts: {
+  scripts: [
     prepare,
     build,
-    format,
-    lintForES,
-    precommint,
-  },
+
+    {
+      nameAndArgs: 'pre-commit [options]',
+      description: 'Lint your staged code before commiting.',
+      executableFile: './lib/scripts/pre-commit.js',
+    },
+
+    {
+      nameAndArgs: 'format [files...]',
+      description: 'format code with prettier',
+      executableFile: './lib/scripts/format.js',
+    },
+
+    {
+      nameAndArgs: 'lint-es [file/dir/glob...]',
+      description: 'Lint your source code with eslint.',
+      executableFile: './lib/scripts/lint-es.js',
+    },
+  ],
 };

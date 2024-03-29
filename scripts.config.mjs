@@ -5,5 +5,6 @@
  */
 
 export default {
-  extends: ['@maltose888/common-scripts/scripts.config.js'],
+  //   extends: ['@shareable-scripts/common-scripts/scripts.config.js'],
+  extends: ["./packages/common-scripts/scripts.config.js"],
 };

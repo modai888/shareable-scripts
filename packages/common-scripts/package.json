@@ -1,6 +1,6 @@
 {
-  "name": "@maltose888/common-scripts",
-  "version": "0.1.1",
+  "name": "@shareable-scripts/common-scripts",
+  "version": "0.1.2",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -9,11 +9,10 @@
     "scripts.config.js"
   ],
   "scripts": {
-    "build": "rimraf -rf lib && node ./run-script build --keep-file-extension --copy-files",
-    "format": "node ./run-script format ./src",
-    "lint": "node ./run-script lint-es",
-    "npm-script:debug": "node ./run-script prepare",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rimraf -rf lib && node ./run build --keep-file-extension --copy-files",
+    "format": "node ./run format ./src --check",
+    "lint": "node ./run lint-es",
+    "npm-script:debug": "node run.js --help"
   },
   "keywords": [],
   "author": "",
@@ -22,25 +21,19 @@
     "@babel/cli": "^7.23.9",
     "@babel/core": "^7.24.0",
     "@babel/preset-env": "^7.24.0",
-    "@maltose888/eslint-config": "workspace:^",
+    "@shareable-scripts/core": "workspace:^",
+    "@shareable-scripts/eslint-config": "workspace:^",
     "check-engines": "^1.6.0",
     "eslint": "^8.57.0",
     "execa": "^8.0.1",
     "find-up": "^7.0.0",
+    "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
     "read-pkg-up": "7.0.1",
     "semver": "^7.6.0"
   },
-  "devDependencies": {
-    "@maltose888/shareable-scripts": "workspace:^",
-    "yargs": "^17.7.2",
-    "yargs-parser": "^21.1.1"
-  },
   "engines": {
     "node": ">=16"
-  },
-  "optionalDependencies": {
-    "husky": "^9.0.11"
   }
 }

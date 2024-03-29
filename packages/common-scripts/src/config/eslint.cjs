@@ -91,12 +91,12 @@ if (isReactApp && !hasPropTypes) {
 module.exports = {
   globals,
   extends: [
-    require.resolve('@maltose888/eslint-config'),
-    require.resolve('@maltose888/eslint-config/jest'),
+    require.resolve('@shareable-scripts/eslint-config'),
+    require.resolve('@shareable-scripts/eslint-config/jest'),
 
-    isReactApp ? require.resolve('@maltose888/eslint-config/react') : null,
-    isReactApp ? require.resolve('@maltose888/eslint-config/jsx-a11y') : null,
-    require.resolve('@maltose888/eslint-config/prettier'),
+    isReactApp ? require.resolve('@shareable-scripts/eslint-config/react') : null,
+    isReactApp ? require.resolve('@shareable-scripts/eslint-config/jsx-a11y') : null,
+    require.resolve('@shareable-scripts/eslint-config/prettier'),
   ].filter(Boolean),
 
   settings: {

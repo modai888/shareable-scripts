@@ -1,27 +1,27 @@
 {
   "name": "shareable-scripts",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "build": "pnpm run --stream -r build",
-    "clean:node_modules": "pnpm -r --stream exec rimraf -rf node_modules",
+    "format": "node ./packages/cli/lib/cli.js format",
+    "lint": "node ./packages/cli/lib/cli.js lint-es",
     "format:shareable-scripts": "pnpm shareable-scripts format ./packages/shareable-scripts/src",
     "lint:shareable-scripts": "pnpm shareable-scripts lint-es --config ./eslintrc.cjs ./packages/shareable-scripts",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "shareable-scripts prepare",
-    "public": "pnpm --stream -r --filter @maltose888/* publish --access public"
+    "clean:node_modules": "rimraf -rf node_modules && pnpm -r --stream exec rimraf -rf node_modules",
+    "public": "pnpm --stream -r --filter @shareable-scripts/* publish --access public",
+    "prepare": "shareable-scripts prepare"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@8.15.4+sha256.cea6d0bdf2de3a0549582da3983c70c92ffc577ff4410cbf190817ddc35137c2",
   "devDependencies": {
-    "@maltose888/common-scripts": "workspace:^",
-    "@maltose888/shareable-scripts": "workspace:^",
-    "husky": "^9.0.11",
     "rimraf": "^5.0.5",
-    "rollup": "^4.13.0"
+    "rollup": "^4.13.0",
+    "ts-node": "^10.9.2"
   },
   "engines": {
     "git": ">=2.9"
