@@ -83,7 +83,7 @@ export default (command) => {
 
         // 配置husky脚本
         const huskyrc = findConfigUp(
-          ['.huskyrc.js', '.huskyrc.cjs', '.huskyrc.mjs', 'huskyrc.js', 'huskyrc.cjs', 'huskyrc.mjs'],
+          ['.huskyrc.js', '.huskyrc.cjs', '.huskyrc.mjs', 'husky.config.js', 'husky.config.cjs', 'huskyrc.config.mjs'],
           { cwd: pkg.applicationRoot }
         );
 

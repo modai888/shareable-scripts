@@ -3,7 +3,7 @@
  * @date 2024/03/21
  * @description eslint config
  */
-const config = require('@shareable-scripts/common-scripts/lib/config/eslint.cjs');
+const config = require('./packages/common-scripts/lib/config/eslint.cjs');
 
 module.exports = {
   root: true,
