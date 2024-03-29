@@ -3,29 +3,22 @@
  * @date 2024/03/15
  * @description 构建分发
  */
-// import { execa } from "execa";
+import { commander } from '@shareable-scripts/core';
 
-// const here = (p) => new URL(p, import.meta.url);
+const program = new commander.Command();
 
-const command = {
-  command: 'build',
-  description: '构建代码',
+program
+  .name('build')
+  .description('Compile and bundle your source code.')
+  .option('--bundle', 'bundle compible output, default false', false)
+  .allowUnknownOption()
+  .action(action);
 
-  builder: (yargs) => {
-    return yargs.options({
-      bundle: {
-        description: '是否需要对编译产物进行打包',
-        type: 'boolean',
-      },
-    });
-  },
+async function action(options, command) {
+  const buildScript = options.bundle ? './build/rollup' : './build/babel.js';
+  return import(buildScript).then((mod) => {
+    return mod.run(command.args);
+  });
+}
 
-  handler: async (argv) => {
-    const buildScript = argv.bundle ? './build/rollup' : './build/babel.js';
-    return import(buildScript).then((mod) => {
-      return mod.run(argv);
-    });
-  },
-};
-
-export default command;
+export default program;

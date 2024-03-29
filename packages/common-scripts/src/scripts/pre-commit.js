@@ -7,80 +7,121 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
-import { execa } from 'execa';
-import * as pkg from '../package-manager.js';
+import { commander, toArgv } from '@shareable-scripts/core';
+import { execa, execaCommandSync } from 'execa';
 import { findConfigUp } from '../utils.js';
+import * as pkg from '../package-manager.js';
 
 let __dirname;
-try {
-  const __filename__ = url.fileURLToPath(import.meta.url);
-  __dirname = path.dirname(__filename__);
-} catch (error) {
-  console.error(error);
+{
+  try {
+    const __filename__ = url.fileURLToPath(import.meta.url);
+    __dirname = path.dirname(__filename__);
+  } catch (error) {
+    console.error(error);
+  }
 }
+
+const _CONFIG_FILES = [
+  '.lintstagedrc',
+  '.lintstagedrc.json',
+  '.lintstagedrc.yaml',
+  '.lintstagedrc.yml',
+  '.lintstagedrc.js',
+  '.lintstagedrc.mjs',
+  '.lintstagedrc.cjs',
+  'lint-staged.config.js',
+  'lint-staged.config.mjs',
+  'lint-staged.config.cjs',
+];
+
+const _IGNORE_FILES = ['.gitignore', '.eslintignore'];
+
+const execute = (command) => {
+  const { stdout } = execaCommandSync(command, {
+    encoding: 'utf8',
+    preferLocal: true,
+    localDir: path.resolve(__dirname, '../..'),
+  });
+
+  return stdout;
+};
 
 const here = (p) => path.join(__dirname, p);
 const hereRelative = (p) => here(p).replace(process.cwd(), '.');
-
 const rootRelative = (p) => path.resolve(p).replace(process.cwd(), '.');
 
-const existUserConfig = () =>
-  !!findConfigUp([
-    '.lintstagedrc',
-    '.lintstagedrc.json',
-    '.lintstagedrc.yaml',
-    '.lintstagedrc.yml',
-    '.lintstagedrc.js',
-    '.lintstagedrc.mjs',
-    '.lintstagedrc.cjs',
-    'lint-staged.config.js',
-    'lint-staged.config.mjs',
-    'lint-staged.config.cjs',
-  ]);
+// programe
 
-const existUserIgnore = () => findConfigUp(['.eslintignore']);
+function collectCommaOptionArgs(value, previous) {
+  return previous.concat(value.split(','));
+}
 
-const command = {
-  command: 'pre-commit',
-  description: '基于git钩子【pre-commit】执行代码提交前校验',
+function collectOptionArgs(value, previous) {
+  return previous.concat(value);
+}
 
-  builder: (yargs) => {
-    // return yargs.positional('files', {
-    //   description: '执行检测的代码目录或文件',
-    // });
+function integerOptionArgs(value) {
+  return parseInt(value, 10);
+}
 
-    yargs.options({
-      c: {
-        alias: ['config'],
-        description: 'path to configuration file, or - to read from stdin',
-      },
-    });
-  },
+function concurrentOptionArgs(value) {
+  console.log('concurrent ', value);
+  if (value === 'false') return false;
 
-  handler: async (argv) => {
-    let args = process.argv.slice(3);
+  return parseInt(value, 10);
+}
 
-    const params = [];
+const program = new commander.Command();
 
-    // --config
-    {
-      const useUserConfig = argv.config || pkg.hasFieldKey('lint-staged') || existUserConfig();
+program
+  .usage('[options]')
+  .summary('Run tasks for git-staged files')
+  .description('Run tasks for git-staged files and will-designed configration')
+  .version(`lint-staged ${execute('lint-staged --version')}`)
 
-      params.push(...(useUserConfig ? [] : ['--config', hereRelative('../config/lintstaged.cjs')]));
-    }
+  .addOption(new commander.Option('--allow-empty').hideHelp().default(false))
+  .addOption(new commander.Option('-p, --concurrent [number]').hideHelp().default(true).argParser(concurrentOptionArgs))
+  .addOption(new commander.Option('-c, --config <path>').hideHelp())
+  .addOption(new commander.Option('--cwd [path]').hideHelp())
+  .addOption(new commander.Option('-d, --debug').hideHelp())
+  .addOption(new commander.Option('--no-stash').hideHelp())
+  .addOption(new commander.Option('--no-hide-partially-staged').hideHelp())
+  .addOption(new commander.Option('--diff [string]').hideHelp().implies({ stash: false }))
+  .addOption(new commander.Option('--diff-filter [string]').hideHelp())
+  .addOption(new commander.Option('--max-arg-length [number]').hideHelp().default(0))
+  .addOption(new commander.Option('-q, --quiet').hideHelp().default(false))
+  .addOption(new commander.Option('-r, --relative').hideHelp().default(false))
+  .addOption(new commander.Option('-x, --shell [path]').hideHelp().default(false))
 
-    // 其他参数
-    params.push(...args.map((arg) => arg.replace(`${process.cwd()}/`, '')));
+  .action(action);
 
-    await execa('lint-staged', params, {
-      verbose: true,
-      preferLocal: true,
-      localDir: path.resolve(__dirname, '../..'),
-      stderr: process.stderr,
-      stdin: process.stdin,
-      stdout: process.stdout,
-    });
-  },
-};
+program.on('--help', function () {
+  console.log('\n================ LINT-STAGED HELP ================\n');
+  console.log(execute('lint-staged --help'));
+});
 
-export default command;
+program.parseAsync(process.argv);
+
+async function action(options, command) {
+  const existUserConfig = () => !!findConfigUp(_CONFIG_FILES);
+
+  const params = toArgv(command, {
+    '--config': (key, option, value) => {
+      if (value) return ['--config', value];
+
+      if (!pkg.hasFieldKey('lint-staged') && !existUserConfig()) {
+        return ['--config', hereRelative('../config/lintstaged.cjs')];
+      }
+    },
+  });
+
+  await execa('lint-staged', params, {
+    verbose: true,
+    preferLocal: true,
+    localDir: path.resolve(__dirname, '../..'),
+    stderr: 'inherit',
+    stdin: 'inherit',
+    stdout: 'inherit',
+  });
+}

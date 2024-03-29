@@ -7,106 +7,212 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
-import { execa } from 'execa';
-import * as pkg from '../package-manager.js';
+import { commander, toArgv } from '@shareable-scripts/core';
+import { execa, execaCommandSync } from 'execa';
 import { findConfigUp } from '../utils.js';
+import * as pkg from '../package-manager.js';
 
 let __dirname;
-try {
-  const __filename__ = url.fileURLToPath(import.meta.url);
-  __dirname = path.dirname(__filename__);
-} catch (error) {
-  console.error(error);
+{
+  try {
+    const __filename__ = url.fileURLToPath(import.meta.url);
+    __dirname = path.dirname(__filename__);
+  } catch (error) {
+    console.error(error);
+  }
 }
+
+const _CONFIG_FILES = [
+  '.eslintrc',
+  '.eslintrc.js',
+  '.eslintrc.cjs',
+  '.eslintrc.yaml',
+  '.eslintrc.yml',
+  '.eslintrc.json',
+];
+
+const _IGNORE_FILES = ['.gitignore', '.eslintignore'];
+
+const execute = (command) => {
+  const { stdout } = execaCommandSync(command, {
+    encoding: 'utf8',
+    preferLocal: true,
+    localDir: path.resolve(__dirname, '../..'),
+  });
+
+  return stdout;
+};
 
 const here = (p) => path.join(__dirname, p);
 const hereRelative = (p) => here(p).replace(process.cwd(), '.');
 const rootRelative = (p) => path.resolve(p).replace(process.cwd(), '.');
 
-const existUserConfig = () =>
-  !!findConfigUp(['.eslintrc', '.eslintrc.js', '.eslintrc.cjs', '.eslintrc.yaml', '.eslintrc.yml', '.eslintrc.json']);
+// program
 
-const existUserIgnore = () => findConfigUp(['.eslintignore']);
+function collectCommaOptionArgs(value, previous) {
+  return previous.concat(value.split(','));
+}
 
-const command = {
-  command: 'lint-es [files...]',
-  description: '使用【eslint】进行代码质量检查',
+function collectOptionArgs(value, previous) {
+  return previous.concat(value);
+}
 
-  builder: (yargs) => {
-    return yargs.positional('files', {
-      description: '执行检测的代码目录或文件',
-    });
-  },
+function integerOptionArgs(value, previous) {
+  return parseInt(value, 10);
+}
 
-  handler: async (argv) => {
-    let params = [];
+const program = new commander.Command();
 
-    let files = [...argv.files];
-    let args = process.argv.slice(3).filter((a) => !files.includes(a));
+program
+  .addArgument(new commander.Argument('[files...]', 'file/dir/glob ... to lint'))
+  .usage('[options] [file/dir/glob ...]')
+  .summary('Lint your source code')
+  .description('Lint your source code with eslint and will-designed configration')
+  .version(`eslint ${execute('eslint --version')}`)
+  // Basic configuration:
+  .addOption(new commander.Option('--no-eslintrc').hideHelp())
+  .addOption(new commander.Option('-c, --config <path>').hideHelp())
+  .addOption(new commander.Option('--env [env]').hideHelp().default([]).argParser(collectCommaOptionArgs))
+  .addOption(new commander.Option('--ext [ext]').hideHelp().default([]).argParser(collectCommaOptionArgs))
+  .addOption(new commander.Option('--global [global]').hideHelp().default([]).argParser(collectCommaOptionArgs))
+  .addOption(new commander.Option('--parser <parser>').hideHelp())
+  .addOption(new commander.Option('--parser-options <object>').hideHelp().default([]).argParser(collectOptionArgs))
+  .addOption(new commander.Option('--resolve-plugins-relative-to').hideHelp())
+  // Specify Rules and Plugins:
+  .addOption(new commander.Option('--plugin [plugin]').hideHelp().default([]).argParser(collectOptionArgs))
+  .addOption(new commander.Option('--rule <rule>').hideHelp().default([]).argParser(collectOptionArgs))
+  .addOption(new commander.Option('--ruledir [path]').hideHelp().default([]).argParser(collectOptionArgs))
+  // Fix Problems:
+  .addOption(new commander.Option('--fix').hideHelp())
+  .addOption(new commander.Option('--fix-dry-run').hideHelp())
+  .addOption(
+    new commander.Option('--fix-type')
+      .hideHelp()
+      .default([])
+      .choices(['directive', 'problem', 'suggestion', 'layout'])
+      .argParser(collectCommaOptionArgs)
+  )
+  // Ignore Files:
+  .addOption(new commander.Option('--ignore-path <path>').hideHelp())
+  .addOption(new commander.Option('--no-ignore').hideHelp())
+  .addOption(new commander.Option('--ignore-pattern <pattern>').hideHelp().default([]).argParser(collectOptionArgs))
+  // Use stdin:
+  .addOption(new commander.Option('--stdin').hideHelp())
+  .addOption(new commander.Option('--stdin-filename <path>').hideHelp())
+  // Handle Warnings:
+  .addOption(new commander.Option('--quiet').hideHelp())
+  .addOption(new commander.Option('--max-warnings <number>').hideHelp().default(-1).argParser(integerOptionArgs))
+  // Output:
+  .addOption(new commander.Option('-o, --output-file <path>').hideHelp())
+  .addOption(new commander.Option('-f, --format <format>').hideHelp().default('stylish'))
+  .addOption(new commander.Option('--color').hideHelp())
+  .addOption(new commander.Option('--no-color').hideHelp())
+  // Inline configuration comments:
+  .addOption(new commander.Option('--no-inline-config').hideHelp())
+  .addOption(new commander.Option('--report-unused-disable-directives').hideHelp())
+  .addOption(new commander.Option('--report-unused-disable-directives-severity <severity>').hideHelp())
+  // Caching:
+  .addOption(new commander.Option('--cache').hideHelp().default(false))
+  .addOption(new commander.Option('--cache-file <file>').hideHelp())
+  .addOption(new commander.Option('--cache-location <path>').hideHelp())
+  .addOption(new commander.Option('--cache-strategy <metadata|content>').hideHelp().choices(['metadata', 'content']))
+  // Miscellaneous:
+  .addOption(new commander.Option('--init').hideHelp())
+  .addOption(new commander.Option('--env-info').hideHelp())
+  .addOption(new commander.Option('--no-error-on-unmatched-pattern').hideHelp())
+  .addOption(new commander.Option('--exit-on-fatal-error').hideHelp())
+  .addOption(new commander.Option('--debug').hideHelp())
+  .addOption(new commander.Option('--print-config <path>').hideHelp())
 
-    // --config
-    // --resolve-plugins-relative-to
-    {
-      const useUserConfig = argv.config || pkg.hasFieldKey('eslintConfig') || existUserConfig();
-      // --no-eslintrc
-      const noEslintrc = argv.eslintrc === false || argv['no-eslintrc'];
+  .action(action);
 
-      params.push(...(useUserConfig ? [] : ['--config', hereRelative('../config/eslint.cjs')]));
+program.on('--help', function () {
+  console.log('\n================ ESLINT HELP ================\n');
+  console.log(execute('eslint --help'));
+});
 
-      if (!argv['resolve-plugins-relative-to']) {
-        params.push('--resolve-plugins-relative-to', hereRelative('../config'));
+program.parseAsync(process.argv);
+
+async function action(files, options, command) {
+  const existUserConfig = () => !!findConfigUp(_CONFIG_FILES);
+  const existUserIgnore = () => findConfigUp(['.eslintignore']);
+
+  let lintFiles = [...files];
+
+  const createMultiOptionArgv = (optionKey, comma) => {
+    return (key, option, value) => {
+      if (!value?.length) return;
+
+      if (comma) return [optionKey, value.join(',')];
+
+      return value.reduce((params, v) => (params.push([optionKey, v]), params), []);
+    };
+  };
+
+  const params = toArgv(command, {
+    '--config': (key, option, value) => {
+      if (value) return ['--config', value];
+
+      if (!pkg.hasFieldKey('eslintConfig') && !existUserConfig()) {
+        return ['--config', hereRelative('../config/eslint.cjs')];
       }
-    }
+    },
 
-    // --ignore-path
-    {
-      const useUserIgnore = argv['ignore-path'] || existUserIgnore();
-      params.push(...(useUserIgnore ? [] : ['--ignore-path', hereRelative('../config/eslintignore')]));
-    }
-
-    // --ext
-    {
-      const extensions = (argv.ext || 'js,jsx,ts,tsx').split(',');
-
-      if (files.length) {
-        // 目录及文件
-        files = files.filter((a) => !path.extname(a) || extensions.some((e) => a.endsWith(e)));
+    '--resolve-plugins-relative-to': (key, option, value) => {
+      if (!value) {
+        return ['--resolve-plugins-relative-to', hereRelative('../config')];
       }
+    },
 
-      params.push(...(argv.ext ? [] : ['--ext', extensions.join(',')]));
-    }
+    '--ignore-path': (key, option, ignore) => {
+      if (ignore) return ['--ignore-path', ignore];
 
-    // --cache
-    {
-      const enable = argv.cache;
-      const location = argv.cacheLocation || argv['cache-location'];
+      const useUserConfig = existUserIgnore();
 
-      if (enable && !location) {
-        params.push('--cache-location', pkg.resolvePath('node_modules/.cache'));
+      // add default prettierignore
+      if (!useUserConfig) {
+        return ['--ignore-path', hereRelative('../config/eslintignore')];
       }
-    }
+    },
 
-    // 其他参数
-    params.push(...args.map((a) => a.replace(`${process.cwd()}/`, '')));
+    '--ext': (key, option, extensions) => {
+      extensions = extensions?.length ? extensions : ['.js', '.jsx', '.ts', '.tsx'];
 
-    // files
-    // --print-config
-    {
-      const printConfig = argv.printConfig || argv['print-config'];
-      // 如果files为空，但argv.files不为空，说明files里的文件已经被extensions过滤了
-      const notMatchedFiles = !files.length && argv.files.length;
-      params.push(...(printConfig || notMatchedFiles ? [] : files.length ? [...files] : ['.']));
-    }
+      lintFiles = lintFiles.filter((a) => !path.extname(a) || extensions.some((e) => a.endsWith(e)));
+      return ['--ext', extensions.join(',')];
+    },
 
-    await execa('eslint', params, {
-      verbose: true,
-      preferLocal: true,
-      localDir: path.resolve(__dirname, '../..'),
-      stderr: process.stderr,
-      stdin: process.stdin,
-      stdout: process.stdout,
-    });
-  },
-};
+    '--cache': (key, option, value) => {
+      if (value && !options.cacheLocation) {
+        return ['--cache-location', pkg.resolvePath('node_modules/.cache')];
+      }
+    },
 
-export default command;
+    '--env': createMultiOptionArgv('--env', true),
+    '--global': createMultiOptionArgv('--global', true),
+    '--fix-type': createMultiOptionArgv('--global', true),
+    '--parser-options': createMultiOptionArgv('--parser-options'),
+    '--plugin': createMultiOptionArgv('--plugin'),
+    '--ignore-pattern': createMultiOptionArgv('--ignore-pattern'),
+    '--rule': createMultiOptionArgv('--plugin'),
+    '--ruledir': createMultiOptionArgv('--ruledir'),
+  });
+
+  // files
+  {
+    const notMatchedFiles = files.length && !lintFiles.length;
+    params.push(...(options.printConfig || notMatchedFiles ? [] : lintFiles.length ? [...lintFiles] : ['.']));
+  }
+
+  //   console.log('params: ', params);
+  //   return;
+
+  await execa('eslint', params, {
+    verbose: true,
+    preferLocal: true,
+    localDir: path.resolve(__dirname, '../..'),
+    stderr: process.stderr,
+    stdin: process.stdin,
+    stdout: process.stdout,
+  });
+}

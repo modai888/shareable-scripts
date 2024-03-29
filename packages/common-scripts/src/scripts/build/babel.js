@@ -5,28 +5,68 @@
  */
 import path from 'node:path';
 import url from 'node:url';
-import { execa } from 'execa';
+import { createApplicationPackage } from '@shareable-scripts/core';
+import { execa, execaCommandSync } from 'execa';
+import * as pkg from '../../package-manager.js';
 
-const __filename__ = typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url);
-const __dirname__ = path.dirname(__filename__);
+let __dirname;
+{
+  try {
+    const __filename__ = url.fileURLToPath(import.meta.url);
+    __dirname = path.dirname(__filename__);
+  } catch (error) {
+    console.error(error);
+  }
+}
 
-const here = (p) => path.join(__dirname__, p);
+const _CONFIG_FILES = [
+  '.babelrc',
+  '.babelrc.json',
+  '.babelrc.js',
+  '.babelrc.cjs',
+  '.babelrc.mjs',
+  '.babelrc.cts',
+  'babel.config.json',
+  'babel.config.js',
+  'babel.config.cjs',
+  'babel.config.mjs',
+  'babel.config.cts',
+];
 
-const run = async (argv) => {
-  console.log('~~~~ babel ~~~~');
-  console.log(argv);
+const here = (p) => path.join(__dirname, p);
+const hereRelative = (p) => here(p).replace(process.cwd(), '.');
 
-  const config = ['--config-file', here('../../config/babelrc.js')];
-  const outDir = ['--out-dir', argv.outDir ?? 'lib'];
+const execute = (command) => {
+  const { stdout } = execaCommandSync(command, {
+    encoding: 'utf8',
+    preferLocal: true,
+    localDir: path.resolve(__dirname, '../..'),
+  });
 
-  // 其他参数
-  const args = process.argv.slice(3).map((arg) => arg.replace(`${process.cwd()}/`, ''));
+  return stdout;
+};
 
-  return execa('babel', [...config, ...outDir, 'src'].concat(args), {
+const run = async (args) => {
+  console.log('~~~~~~~~~~~~ BUILD WITH BABEL ~~~~~~~~~~~~');
+  console.log('Where babel: ', execute('where babel'));
+
+  const existUserConfig = () => !!findConfigUp(_CONFIG_FILES) && pkg.hasFieldKey('babel');
+
+  if (!args.includes('--config-file') && !existUserConfig) {
+    args.push('--config-file', here('../../config/babelrc.js'));
+  }
+
+  if (!args.includes('--out-dir')) {
+    args.push('--out-dir', 'lib');
+  }
+
+  return execa('babel', [...args, 'src'], {
     verbose: true,
-    stderr: process.stderr,
-    stdin: process.stdin,
-    stdout: process.stdout,
+    preferLocal: true,
+    localDir: path.resolve(__dirname, '../..'),
+    stderr: 'inherit',
+    stdin: 'inherit',
+    stdout: 'inherit',
   });
 };
 
