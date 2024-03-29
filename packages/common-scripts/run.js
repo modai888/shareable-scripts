@@ -3,8 +3,7 @@
  * @date 2024/03/15
  * @description run src/scripts
  */
-import path from 'node:path';
-import { run, registerCommands, commander } from '@shareable-scripts/core';
+import { run } from '@shareable-scripts/core';
 
 import prepare from './src/scripts/prepare.js';
 import build from './src/scripts/build.js';
@@ -34,29 +33,29 @@ const scripts = [
 
 run(scripts);
 
-const start = async () => {
-  const program = new commander.Command();
+// const start = async () => {
+//   const program = new commander.Command();
 
-  program
-    .name(path.basename(process.argv[1]))
-    // .usage('[command]')
-    .description('Run and test your local scripts')
-    .allowUnknownOption(true)
-    .enablePositionalOptions()
-    .showHelpAfterError('(add --help for additional information)')
-    .helpCommand(false)
-    .configureHelp({
-      subcommandTerm(cmd) {
-        return cmd.name();
-      },
-    });
+//   program
+//     .name(path.basename(process.argv[1]))
+//     // .usage('[command]')
+//     .description('Run and test your local scripts')
+//     .allowUnknownOption(true)
+//     .enablePositionalOptions()
+//     .showHelpAfterError('(add --help for additional information)')
+//     .helpCommand(false)
+//     .configureHelp({
+//       subcommandTerm(cmd) {
+//         return cmd.name();
+//       },
+//     });
 
-  registerCommands(
-    scripts.map((command) => ({ command })),
-    program
-  );
+//   registerCommands(
+//     scripts.map((command) => ({ command })),
+//     program
+//   );
 
-  await program.parseAsync();
-};
+//   await program.parseAsync();
+// };
 
 // start();

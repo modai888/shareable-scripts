@@ -55,6 +55,7 @@ export const createRequire = () => (id: string) => {
   return import(id);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _interop = (mod: any) => {
   return (mod && mod.__esModule) || mod.default ? mod : { default: mod };
 };

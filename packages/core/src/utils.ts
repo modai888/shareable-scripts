@@ -3,6 +3,7 @@
  * @date 2024/03/28
  * @description 将command解析的options还原为命令行选项
  */
+/*eslint-disable @typescript-eslint/no-explicit-any */
 import { Command, Option, OptionValueSource } from 'commander';
 
 export type ToArgvVisitor = {
@@ -37,7 +38,7 @@ export function toArgv(command: Command, visitor?: ToArgvVisitor) {
   const push = (option: Option, ...pairs: ([string, string] | [string])[]) => {
     if (!pairs.length) return;
 
-    for (let [key, value] of pairs) {
+    for (const [key, value] of pairs) {
       if (!key) continue;
 
       params.push(key);
@@ -45,7 +46,7 @@ export function toArgv(command: Command, visitor?: ToArgvVisitor) {
     }
   };
 
-  for (let option of command.options) {
+  for (const option of command.options) {
     const key = parseKey(option);
     const optionKey = (option.long || option.short)!;
 

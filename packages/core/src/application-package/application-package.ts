@@ -9,6 +9,8 @@ import resolvePackagePath from 'resolve-package-path';
 import { findUpSync, pathExistsSync } from 'find-up';
 import { readJsonFile, writeJsonFile } from './json-file.js';
 
+/*eslint-disable @typescript-eslint/no-explicit-any */
+
 export interface FindPackageUpOptions {
   /**
    * The package name
@@ -42,10 +44,10 @@ export function findPackageUp(options: FindPackageUpOptions = {}) {
     (directory) => {
       const p = path.join(directory, filename);
       if (pathExistsSync(p)) {
-        if (options.name) {
+        if (name) {
           const json = JSON.parse(fs.readFileSync(p, { encoding: 'utf-8' }));
 
-          if (json?.name === options.name) {
+          if (json?.name === name) {
             return p;
           }
         }
@@ -60,6 +62,8 @@ export function findPackageUp(options: FindPackageUpOptions = {}) {
 
   return pkgfile;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 
 export function sortByKey(object: { [key: string]: any }): {
   [key: string]: any;

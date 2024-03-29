@@ -4,7 +4,6 @@
  * @description 代码风格格式化
  */
 /* eslint no-unused-vars: "warn" */
-import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 import { commander, toArgv } from '@shareable-scripts/core';
@@ -31,7 +30,7 @@ const _CONFIG_FILES = [
   '.eslintrc.json',
 ];
 
-const _IGNORE_FILES = ['.gitignore', '.eslintignore'];
+// const _IGNORE_FILES = ['.gitignore', '.eslintignore'];
 
 const execute = (command) => {
   const { stdout } = execaCommandSync(command, {
@@ -45,7 +44,7 @@ const execute = (command) => {
 
 const here = (p) => path.join(__dirname, p);
 const hereRelative = (p) => here(p).replace(process.cwd(), '.');
-const rootRelative = (p) => path.resolve(p).replace(process.cwd(), '.');
+// const rootRelative = (p) => path.resolve(p).replace(process.cwd(), '.');
 
 // program
 
@@ -57,7 +56,7 @@ function collectOptionArgs(value, previous) {
   return previous.concat(value);
 }
 
-function integerOptionArgs(value, previous) {
+function integerOptionArgs(value) {
   return parseInt(value, 10);
 }
 
