@@ -1,0 +1,33 @@
+{
+  "name": "@shareable-scripts/cli",
+  "version": "0.1.2",
+  "description": "可共享脚本运行框架命令行程序",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "shareable-scripts": "lib/cli.js"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "npm run clean && tsc -p tsconfig.json -t esnext --module esnext --outDir lib",
+    "format": "node --import=./register.js src/cli.ts format",
+    "lint": "node --import=./register.js src/cli.ts lint-es",
+    "clean": "rimraf -rf lib",
+    "npm:debug": "node --import=./register.js src/cli.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@shareable-scripts/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.26",
+    "typescript": "^5.4.2"
+  }
+}
