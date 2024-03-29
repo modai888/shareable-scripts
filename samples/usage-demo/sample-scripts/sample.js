@@ -4,19 +4,14 @@
  * @description 自定义脚本
  */
 
-const command = 'sample <path>';
-const description = 'Your sample script';
+module.exports = (command) => {
+  command
+    .name('sample')
+    .description('The sample command loaded from relative config file.')
+    .option('--debug', 'display detail log')
+    .action(() => {
+      console.log('execute sample command !!!');
+    });
 
-const builder = function (yargs) {
-  return yargs.positional('path', {
-    describe: 'the required args <path>',
-    type: 'string',
-  });
+  return command;
 };
-
-const handler = async function (argv) {
-  console.log('Execution custom command!!');
-  console.log(argv);
-};
-
-module.exports = { command, description, builder, handler };

@@ -1,6 +1,6 @@
 {
   "name": "usage-demo-another",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,8 +11,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@maltose888/common-scripts": "workspace:^",
-    "@maltose888/shareable-scripts": "workspace:^",
+    "@shareable-scripts/common-scripts": "workspace:^",
+    "@shareable-scripts/cli": "workspace:^",
     "usage-demo": "workspace:^"
   },
   "dependencies": {

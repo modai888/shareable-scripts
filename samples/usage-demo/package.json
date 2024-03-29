@@ -1,6 +1,6 @@
 {
   "name": "usage-demo",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "",
   "main": "index.js",
   "files": [
@@ -9,14 +9,16 @@
   "scripts": {
     "format": "shareable-scripts format --log-level debug sample-scripts src",
     "lint": "shareable-scripts lint-es",
-    "debug": "npm run format",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "npm-script:debug": "shareable-scripts lint-es"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@maltose888/common-scripts": "workspace:^",
-    "@maltose888/shareable-scripts": "workspace:^"
+    "@shareable-scripts/cli": "workspace:^",
+    "@shareable-scripts/common-scripts": "workspace:^"
+  },
+  "dependencies": {
+    "@shareable-scripts/core": "workspace:^"
   }
 }
