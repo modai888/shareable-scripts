@@ -5,6 +5,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import module from 'node:module';
 import testEngines from 'check-engines';
 import { findPackageUp, hasProp } from './utils.js';
 
@@ -49,3 +50,8 @@ export const hasFieldKey = (key) => hasProp(pkg.packageJson, key);
 
 export const ifDep = (deps, t, f) => (deps.map((d) => `dependencies.${d}`).some((prop) => hasFieldKey(prop)) ? t : f);
 // export const ifAnyDep = (deps, t, f)=> hasFieldKey
+
+const _require = module.createRequire(import.meta.url);
+export const resolve = (id, options = {}) => {
+  return _require.resolve(id, options);
+};

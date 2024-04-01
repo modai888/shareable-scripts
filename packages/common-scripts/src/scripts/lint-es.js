@@ -76,7 +76,7 @@ program
   .addOption(new commander.Option('--global [global]').hideHelp().default([]).argParser(collectCommaOptionArgs))
   .addOption(new commander.Option('--parser <parser>').hideHelp())
   .addOption(new commander.Option('--parser-options <object>').hideHelp().default([]).argParser(collectOptionArgs))
-  .addOption(new commander.Option('--resolve-plugins-relative-to').hideHelp())
+  .addOption(new commander.Option('--resolve-plugins-relative-to <path>').hideHelp())
   // Specify Rules and Plugins:
   .addOption(new commander.Option('--plugin [plugin]').hideHelp().default([]).argParser(collectOptionArgs))
   .addOption(new commander.Option('--rule <rule>').hideHelp().default([]).argParser(collectOptionArgs))
@@ -158,8 +158,24 @@ async function action(files, options, command) {
     },
 
     '--resolve-plugins-relative-to': (key, option, value) => {
-      if (!value) {
-        return ['--resolve-plugins-relative-to', hereRelative('../config')];
+      let relativeTo = null;
+
+      if (value) {
+        value = path.posix.normalize(value);
+
+        if (value == '.' || /^.{1,2}\//.test(value)) {
+          relativeTo = path.resolve(value);
+        } else {
+          relativeTo = pkg.resolve(value);
+        }
+      }
+
+      //   if (!relativeTo || !value) {
+      //     relativeTo = hereRelative('../config/eslint.cjs');
+      //   }
+
+      if (relativeTo) {
+        return ['--resolve-plugins-relative-to', relativeTo.replace(process.cwd(), '.')];
       }
     },
 
