@@ -85,7 +85,7 @@ export function toArgv(command: Command, visitor?: ToArgvVisitor) {
 
     // 布尔参数
     if (option.isBoolean()) {
-      push(option, [optionKey]);
+      value == true && push(option, [optionKey]);
       continue;
     }
 
