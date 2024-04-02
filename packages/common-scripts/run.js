@@ -29,6 +29,12 @@ const scripts = [
     description: 'Lint your source code with eslint.',
     executableFile: './src/scripts/lint-es.js',
   },
+
+  {
+    nameAndArgs: 'multilang [options] [file/dir...]',
+    description: 'Refactor your code to solve the multilingual extraction problems.',
+    executableFile: './src/scripts/multilang/index.js',
+  },
 ];
 
 run(scripts);

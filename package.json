@@ -11,8 +11,7 @@
     "format:shareable-scripts": "pnpm shareable-scripts format ./packages/shareable-scripts/src",
     "lint:shareable-scripts": "pnpm shareable-scripts lint-es --config ./eslintrc.cjs ./packages/shareable-scripts",
     "clean:node_modules": "rimraf -rf node_modules && pnpm -r --stream exec rimraf -rf node_modules",
-    "public": "pnpm --stream -r --filter @shareable-scripts/* publish --access public",
-    "prepare": "shareable-scripts prepare"
+    "public": "pnpm --stream -r --filter @shareable-scripts/* publish --access public"
   },
   "keywords": [],
   "author": "",
