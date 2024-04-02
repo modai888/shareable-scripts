@@ -28,5 +28,11 @@ export default {
       description: 'Lint your source code with eslint.',
       executableFile: './lib/scripts/lint-es.js',
     },
+
+    {
+      nameAndArgs: 'multilang [options] [file/dir...]',
+      description: 'Refactor your code to solve the multilingual extraction problems.',
+      executableFile: './lib/scripts/multilang/index.js',
+    },
   ],
 };
