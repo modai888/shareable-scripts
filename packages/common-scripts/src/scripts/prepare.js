@@ -21,6 +21,8 @@ let __dirname;
   }
 }
 
+const here = (p) => path.join(__dirname, p);
+
 const execute = (command) => {
   const { stdout } = execaCommandSync(command, {
     encoding: 'utf8',
@@ -43,7 +45,7 @@ export default (command) => {
     .option('--no-prepare-script', 'do not add prepare script')
     .action(async (options) => {
       // 生产环境跳过
-      if (process.env.NODE_ENV === 'production' || process.env.CI === 'true') {
+      if (process.env.NODE_ENV === 'production' || process.env.CI === 'true' || process.env.pipeline != null) {
         return;
       }
 
@@ -85,10 +87,12 @@ export default (command) => {
         }
 
         // 配置husky脚本
-        const huskyrc = findConfigUp(
+        let huskyrc = findConfigUp(
           ['.huskyrc.js', '.huskyrc.cjs', '.huskyrc.mjs', 'husky.config.js', 'husky.config.cjs', 'huskyrc.config.mjs'],
           { cwd: pkg.applicationRoot }
         );
+
+        huskyrc = huskyrc || here('../config/husky.cjs');
 
         if (huskyrc) {
           const m = await import(url.pathToFileURL(huskyrc));

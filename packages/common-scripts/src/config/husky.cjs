@@ -5,6 +5,6 @@
  */
 module.exports = {
   hooks: {
-    ['pre-commit']: `pnpm shareable-scripts pre-commit`,
+    ['pre-commit']: `npx shareable-scripts pre-commit`,
   },
 };
