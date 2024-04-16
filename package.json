@@ -11,7 +11,8 @@
     "format:shareable-scripts": "pnpm shareable-scripts format ./packages/shareable-scripts/src",
     "lint:shareable-scripts": "pnpm shareable-scripts lint-es --config ./eslintrc.cjs ./packages/shareable-scripts",
     "clean:node_modules": "rimraf -rf node_modules && pnpm -r --stream exec rimraf -rf node_modules",
-    "public": "pnpm --stream -r --filter @shareable-scripts/* publish --access public"
+    "public": "pnpm --stream -r --filter @shareable-scripts/* publish --access public",
+    "prepare": "node ./packages/cli/lib/cli.js prepare --no-prepare-script"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +24,7 @@
     "ts-node": "^10.9.2"
   },
   "engines": {
-    "git": ">=2.9"
+    "git": ">=2.9",
+    "node": ">=16"
   }
 }

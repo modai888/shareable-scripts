@@ -20,11 +20,11 @@
   "author": "",
   "license": "ISC",
   "engines": {
-    "node": ">=18"
+    "node": ">=16"
   },
   "dependencies": {
-    "commander": "^12.0.0",
-    "find-up": "^7.0.0",
+    "commander": "11.1.0",
+    "find-up": "^6.3.0",
     "resolve-package-path": "^4.0.3",
     "write-json-file": "^5.0.0"
   },

@@ -40,7 +40,8 @@ export default (command) => {
     .name('prepare')
     .description('Setup your project with husky hooks.')
     .version(`node: ${nodeVersion}\ngit: ${gitVersion}\nhusky: ${huskVersion}`)
-    .action(async () => {
+    .option('--no-prepare-script', 'do not add prepare script')
+    .action(async (options) => {
       // 生产环境跳过
       if (process.env.NODE_ENV === 'production' || process.env.CI === 'true') {
         return;
@@ -71,15 +72,17 @@ export default (command) => {
           throw new Error(`Husky install failed: ${ret}`);
         }
 
-        pkg.updateJson((json) => {
-          const prepareScript = 'shareable-scripts prepare';
-          if (json.scripts?.prepare !== prepareScript) {
-            json.scripts = json.scripts || {};
-            json.scripts.prepare = prepareScript;
+        if (options.prepareScript) {
+          pkg.updateJson((json) => {
+            const prepareScript = 'shareable-scripts prepare';
+            if (json.scripts?.prepare !== prepareScript) {
+              json.scripts = json.scripts || {};
+              json.scripts.prepare = prepareScript;
 
-            return true;
-          }
-        });
+              return true;
+            }
+          });
+        }
 
         // 配置husky脚本
         const huskyrc = findConfigUp(

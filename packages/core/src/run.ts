@@ -77,7 +77,8 @@ Examples:
     .enablePositionalOptions()
 
     .showHelpAfterError('(add --help for additional information)')
-    .helpCommand(false)
+    // .helpCommand(false)
+    .addHelpCommand(false)
     .addHelpText('after', examples)
     .configureHelp({
       subcommandTerm(cmd) {

@@ -52,7 +52,8 @@ export async function run() {
   );
 
   program
-    .helpCommand(false)
+    // .helpCommand(false)
+    .addHelpCommand(false)
     .allowUnknownOption(true)
     .showHelpAfterError('(add --help for additional information)')
     .addHelpText('after', examples)

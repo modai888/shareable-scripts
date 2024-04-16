@@ -24,7 +24,5 @@
     "eslint-plugin-testing-library": "^6.2.0",
     "read-pkg-up": "7.0.1"
   },
-  "devDependencies": {
-    "@shareable-scripts/common-scripts": "workspace:^"
-  }
+  "devDependencies": {}
 }
