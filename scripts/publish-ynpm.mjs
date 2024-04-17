@@ -130,6 +130,9 @@ export default (command) => {
 
       // 发布
       await execute(`ynpm publish -w packages --access public ${options.dryRun ? '--dry-run' : ''}`);
+
+      // 恢复发布产生的临时修改
+      await execute(`git checkout .`);
     });
 
   return command;
