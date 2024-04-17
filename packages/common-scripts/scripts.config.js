@@ -19,7 +19,7 @@ export default {
 
     {
       nameAndArgs: 'format [files...]',
-      description: 'format code with prettier',
+      description: 'Format your code with prettier',
       executableFile: './lib/scripts/format.js',
     },
 
