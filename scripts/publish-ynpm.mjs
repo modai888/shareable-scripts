@@ -55,7 +55,6 @@ export default (command) => {
 
           await writeJsonFile(path.resolve('package.json'), pkg, {
             detectIndent: true,
-            sortKeys: true,
           });
         }
 
@@ -64,10 +63,10 @@ export default (command) => {
         const { jsons, pkgnames } = packages.reduce(
           (ret, pack) => {
             const p = path.resolve(`./packages/${pack}/package.json`);
-            const content = JSON.stringify(fs.readFileSync(p, { encoding: 'utf-8' }));
+            const content = JSON.parse(fs.readFileSync(p, { encoding: 'utf-8' }));
 
             ret.pkgnames.push(content.name);
-            ret.jsons[pack] = { path: p, content };
+            ret.jsons[pack] = ret.jsons[content.name] = { path: p, content };
 
             return ret;
           },
@@ -85,9 +84,13 @@ export default (command) => {
                 if (dep === pkg.content.name) continue;
 
                 ['dependencies', 'devDependencies', 'optionalDependencies'].forEach((field) => {
-                  if (pkg.content[field]?.[dep] !== jsons[dep].content.version) {
+                  if (pkg.content[field]?.[dep] && pkg.content[field][dep] !== jsons[dep].content.version) {
                     dirty = true;
                     pkg.content[field][dep] = jsons[dep].content.version;
+
+                    console.log(
+                      `Changed ${field} "${dep}" version to ${jsons[dep].content.version} for package "${pkg.content.name}"`
+                    );
                   }
                 });
               }
@@ -95,7 +98,6 @@ export default (command) => {
               return dirty
                 ? writeJsonFile(pkg.path, pkg.content, {
                     detectIndent: true,
-                    sortKeys: true,
                   })
                 : null;
             })
