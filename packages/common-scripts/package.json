@@ -1,6 +1,6 @@
 {
   "name": "@shareable-scripts/common-scripts",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "description": "",
   "main": "index.js",
   "type": "module",
