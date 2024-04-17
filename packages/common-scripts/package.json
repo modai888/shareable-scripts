@@ -12,7 +12,7 @@
     "build": "rimraf -rf lib && node ./run build --keep-file-extension --copy-files",
     "format": "node ./run format ./src --check",
     "lint": "node ./run lint-es",
-    "npm-script:debug": "node run.js multilang --check-syntax"
+    "npm-script:debug": "node run.js pre-commit"
   },
   "keywords": [],
   "author": "",

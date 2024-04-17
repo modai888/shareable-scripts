@@ -79,6 +79,9 @@ program
   .description('Run tasks for git-staged files and will-designed configration')
   .version(`lint-staged ${execute('lint-staged --version')}`)
 
+  .addOption(new commander.Option('--no-lint', 'do not eslint your code'))
+  .addOption(new commander.Option('--no-multilang', 'do not fix multilang extraction problems in your code'))
+
   .addOption(new commander.Option('--allow-empty').hideHelp().default(false))
   .addOption(new commander.Option('-p, --concurrent [number]').hideHelp().default(true).argParser(concurrentOptionArgs))
   .addOption(new commander.Option('-c, --config <path>').hideHelp())
@@ -92,6 +95,7 @@ program
   .addOption(new commander.Option('-q, --quiet').hideHelp().default(false))
   .addOption(new commander.Option('-r, --relative').hideHelp().default(false))
   .addOption(new commander.Option('-x, --shell [path]').hideHelp().default(false))
+  .addOption(new commander.Option('-v, --verbose').hideHelp().default(false))
 
   .action(action);
 
@@ -103,24 +107,48 @@ program.on('--help', function () {
 program.parseAsync(process.argv);
 
 async function action(options, command) {
-  const existUserConfig = () => !!findConfigUp(_CONFIG_FILES);
+  const toArgvIgnore = () => null;
+  const existUserConfig = () => !!findConfigUp(_CONFIG_FILES, { stopAt: process.cwd() });
+
+  let configFile = null;
 
   const params = toArgv(command, {
     '--config': (key, option, value) => {
-      if (value) return ['--config', value];
+      if (value) {
+        if (/\.(m|c)?js$/.test(value)) {
+          configFile = value;
+          value = '-';
+        }
+        return ['--config', value];
+      }
 
       if (!pkg.hasFieldKey('lint-staged') && !existUserConfig()) {
-        return ['--config', hereRelative('../config/lintstaged.cjs')];
+        configFile = here('../config/lintstaged.cjs');
+        return ['--config', '-'];
       }
     },
+
+    '--no-lint': toArgvIgnore,
+    '--no-multilang': toArgvIgnore,
   });
+
+  let input;
+  // 支持将argv参数传入到../config/lintstaged.cjs默认配置
+  if (configFile) {
+    if (options.multilang && !findConfigUp(['multilangconfig.properties'])) {
+      process.argv.push('--no-multilang');
+    }
+    const config = await import(url.pathToFileURL(configFile));
+    input = JSON.stringify(config.default ?? config);
+  }
 
   await execa('lint-staged', params, {
     verbose: true,
     preferLocal: true,
     localDir: path.resolve(__dirname, '../..'),
     stderr: 'inherit',
-    stdin: 'inherit',
+    // stdin: input ? null : 'inherit',
     stdout: 'inherit',
+    input: input,
   });
 }

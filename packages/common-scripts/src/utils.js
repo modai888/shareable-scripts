@@ -16,7 +16,7 @@ export function findPackageUp(options = { cwd: process.cwd() }) {
   return { packageJson, path: packageFile };
 }
 
-export function findConfigUp(configs, options = { cwd: process.cwd() }) {
+export function findConfigUp(configs, options = {}) {
   const config = findUpSync(configs, { ...options });
   return config;
 }
