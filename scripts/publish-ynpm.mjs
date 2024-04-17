@@ -44,8 +44,8 @@ export default (command) => {
     .version('0.0.1')
     .option('--dry-run', 'run in dry mode')
     .action(async (options) => {
-      // 1、安装更新依赖
-      await execute('pnpm install --no-frozen-lockfile --ignore-scripts');
+      //   // 1、安装更新依赖
+      //   await execute('pnpm install --no-frozen-lockfile --ignore-scripts');
 
       // 2、更改依赖版本
       {
@@ -103,6 +103,8 @@ export default (command) => {
             })
             .filter((p) => p != null)
         );
+
+        console.log('Changed deps version');
       }
 
       // 3、构建

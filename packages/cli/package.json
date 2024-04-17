@@ -1,6 +1,6 @@
 {
   "name": "@shareable-scripts/cli",
-  "version": "0.1.8",
+  "version": "0.1.10",
   "description": "可共享脚本运行框架命令行程序",
   "main": "index.js",
   "type": "module",
