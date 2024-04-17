@@ -1,6 +1,6 @@
 {
   "name": "@shareable-scripts/core",
-  "version": "0.1.4",
+  "version": "0.1.6",
   "description": "可共享脚本运行框架",
   "main": "lib/index.js",
   "type": "module",
