@@ -1,5 +1,5 @@
 {
-  "name": "@shareable-scripts/eslint-config",
+  "name": "@ctp-fe-scripts/eslint-config",
   "version": "0.1.10",
   "description": "",
   "main": "index.js",

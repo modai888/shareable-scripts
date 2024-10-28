@@ -7,18 +7,18 @@
     "scripts.config.js"
   ],
   "scripts": {
-    "format": "shareable-scripts format --log-level debug sample-scripts src",
-    "lint": "shareable-scripts lint-es",
-    "npm-script:debug": "shareable-scripts lint-es"
+    "format": "ctp-fe-scripts format --log-level debug sample-scripts src",
+    "lint": "ctp-fe-scripts lint-es",
+    "npm-script:debug": "ctp-fe-scripts lint-es"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@shareable-scripts/cli": "workspace:^",
-    "@shareable-scripts/common-scripts": "workspace:^"
+    "@ctp-fe-scripts/cli": "workspace:^",
+    "@ctp-fe-scripts/common-scripts": "workspace:^"
   },
   "dependencies": {
-    "@shareable-scripts/core": "workspace:^"
+    "@ctp-fe-scripts/core": "workspace:^"
   }
 }

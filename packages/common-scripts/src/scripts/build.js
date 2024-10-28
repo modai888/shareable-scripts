@@ -3,7 +3,7 @@
  * @date 2024/03/15
  * @description 构建分发
  */
-import { commander } from '@shareable-scripts/core';
+import { commander } from '@ctp-fe-scripts/core';
 
 const program = new commander.Command();
 

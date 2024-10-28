@@ -5,6 +5,6 @@
  */
 module.exports = {
   hooks: {
-    ['pre-commit']: `npx shareable-scripts pre-commit`,
+    ['pre-commit']: `npx ctp-fe-scripts pre-commit`,
   },
 };

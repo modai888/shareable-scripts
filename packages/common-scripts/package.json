@@ -1,5 +1,5 @@
 {
-  "name": "@shareable-scripts/common-scripts",
+  "name": "@ctp-fe-scripts/common-scripts",
   "version": "0.1.10",
   "description": "",
   "main": "index.js",
@@ -22,8 +22,8 @@
     "@babel/core": "^7.24.0",
     "@babel/parser": "^7.24.1",
     "@babel/preset-env": "^7.24.0",
-    "@shareable-scripts/core": "workspace:^",
-    "@shareable-scripts/eslint-config": "workspace:^",
+    "@ctp-fe-scripts/core": "workspace:^",
+    "@ctp-fe-scripts/eslint-config": "workspace:^",
     "check-engines": "^1.6.0",
     "eslint": "^8.57.0",
     "execa": "^7.2.0",

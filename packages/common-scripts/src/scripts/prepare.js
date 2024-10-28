@@ -76,7 +76,7 @@ export default (command) => {
 
         if (options.prepareScript) {
           pkg.updateJson((json) => {
-            const prepareScript = 'shareable-scripts prepare';
+            const prepareScript = 'ctp-fe-scripts prepare';
             if (json.scripts?.prepare !== prepareScript) {
               json.scripts = json.scripts || {};
               json.scripts.prepare = prepareScript;

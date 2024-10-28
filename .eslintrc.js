@@ -14,7 +14,7 @@ module.exports = {
   //       files: ["**/*.ts?(x)"],
 
   //       parserOptions: {
-  //         project: "./packages/shareable-scripts/tsconfig.json",
+  //         project: "./packages/ctp-fe-scripts/tsconfig.json",
   //       },
   //     },
   //   ],

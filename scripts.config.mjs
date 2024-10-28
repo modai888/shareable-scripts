@@ -6,7 +6,7 @@
 import publishynpm from './scripts/publish-ynpm.mjs';
 
 export default {
-  //   extends: ['@shareable-scripts/common-scripts/scripts.config.js'],
+  //   extends: ['@ctp-fe-scripts/common-scripts/scripts.config.js'],
   extends: ['./packages/common-scripts/scripts.config.js'],
 
   scripts: [publishynpm],

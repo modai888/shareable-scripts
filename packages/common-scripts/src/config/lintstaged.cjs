@@ -20,10 +20,10 @@ console.log('received args: ', args);
 module.exports = {
   //   'README.md': [`${doctoc} --maxlevel 3 --notitle`],
   '*.+(js|jsx|ts|tsx|cjs|mjs|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)': [
-    `shareable-scripts format`,
-    bLint ? `shareable-scripts lint-es` : null,
-    bMultilang ? `shareable-scripts multilang --fix linebreak,repeatextraction` : null,
-    bMultilang ? `shareable-scripts format` : null,
-    // `shareable-scripts test --findRelatedTests`,
+    `ctp-fe-scripts format`,
+    bLint ? `ctp-fe-scripts lint-es` : null,
+    bMultilang ? `ctp-fe-scripts multilang --fix linebreak,repeatextraction` : null,
+    bMultilang ? `ctp-fe-scripts format` : null,
+    // `ctp-fe-scripts test --findRelatedTests`,
   ].filter((_) => !!_),
 };

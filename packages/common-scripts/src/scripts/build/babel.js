@@ -5,7 +5,7 @@
  */
 import path from 'node:path';
 import url from 'node:url';
-import { createApplicationPackage } from '@shareable-scripts/core';
+import { createApplicationPackage } from '@ctp-fe-scripts/core';
 import { execa, execaCommandSync } from 'execa';
 import * as pkg from '../../package-manager.js';
 

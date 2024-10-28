@@ -3,7 +3,7 @@
  * @date 2024/03/19
  * @description 自定义脚本
  */
-import { commander } from '@shareable-scripts/core';
+import { commander } from '@ctp-fe-scripts/core';
 
 const program = new commander.Command();
 

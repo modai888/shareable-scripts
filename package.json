@@ -1,5 +1,5 @@
 {
-  "name": "shareable-scripts",
+  "name": "ctp-fe-scripts",
   "version": "0.1.10",
   "description": "",
   "main": "index.js",
@@ -8,12 +8,12 @@
     "build": "pnpm run --stream -r build",
     "format": "node ./packages/cli/lib/cli.js format",
     "lint": "node ./packages/cli/lib/cli.js lint-es",
-    "format:shareable-scripts": "pnpm shareable-scripts format ./packages/shareable-scripts/src",
-    "lint:shareable-scripts": "pnpm shareable-scripts lint-es --config ./eslintrc.cjs ./packages/shareable-scripts",
+    "format:ctp-fe-scripts": "pnpm ctp-fe-scripts format ./packages/ctp-fe-scripts/src",
+    "lint:ctp-fe-scripts": "pnpm ctp-fe-scripts lint-es --config ./eslintrc.cjs ./packages/ctp-fe-scripts",
     "clean:node_modules": "rimraf -rf node_modules && pnpm -r --stream exec rimraf -rf node_modules",
-    "public": "pnpm --stream -r --filter @shareable-scripts/* publish --access public",
+    "public": "pnpm --stream -r --filter @ctp-fe-scripts/* publish --access public",
     "public:ynpm": "node ./packages/cli/lib/cli.js publish-ynpm",
-    "prepare": "node ./packages/cli/lib/cli.js prepare --no-prepare-script"
+    "_prepare": "node ./packages/cli/lib/cli.js prepare --no-prepare-script"
   },
   "keywords": [],
   "author": "",

@@ -1,12 +1,12 @@
 /**
  * @author wangxuebo@yonyou.com
  * @date 2024/03/26
- * @description shareable-scripts
+ * @description ctp-fe-scripts
  */
 import url from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
-import { commander, createConfigResolver, registerCommands } from '@shareable-scripts/core';
+import { commander, createConfigResolver, registerCommands } from '@ctp-fe-scripts/core';
 
 let __dirname: string;
 try {
@@ -16,7 +16,7 @@ try {
   console.error(error);
 }
 
-const COMMAND_NAME = 'shareable-scripts';
+const COMMAND_NAME = 'ctp-fe-scripts';
 
 const examples = `
 Examples:
@@ -36,7 +36,7 @@ export async function run() {
 
   // 解析配置
   const resolver = createConfigResolver({
-    configFiles: ['scripts.config', 'shareable-scripts.config'],
+    configFiles: ['scripts.config', 'ctp-fe-scripts.config'],
   });
 
   const config = await resolver.resolve();

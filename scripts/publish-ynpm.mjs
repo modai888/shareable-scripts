@@ -40,7 +40,7 @@ export default (command) => {
 
   command
     .name('publish-ynpm')
-    .description('Publish shareable-scripts to ynpm registry.')
+    .description('Publish ctp-fe-scripts to ynpm registry.')
     .version('0.0.1')
     .option('--dry-run', 'run in dry mode')
     .action(async (options) => {

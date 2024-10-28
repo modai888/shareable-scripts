@@ -7,8 +7,8 @@ import simple from './src/scripts/simple.mjs';
 // const simple = require('./src/scripts/simple.mjs');
 
 export default {
-  //   extends:'@shareable-scripts/common-scripts/scripts.config.js',
-  extends: ['@shareable-scripts/common-scripts/scripts.config.js', './sample-scripts'],
+  //   extends:'@ctp-fe-scripts/common-scripts/scripts.config.js',
+  extends: ['@ctp-fe-scripts/common-scripts/scripts.config.js', './sample-scripts'],
 
   scripts: [simple],
 };

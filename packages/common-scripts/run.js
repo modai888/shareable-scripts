@@ -3,7 +3,7 @@
  * @date 2024/03/15
  * @description run src/scripts
  */
-import { run } from '@shareable-scripts/core';
+import { run } from '@ctp-fe-scripts/core';
 
 import prepare from './src/scripts/prepare.js';
 import build from './src/scripts/build.js';

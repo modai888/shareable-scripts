@@ -6,7 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
-import { commander, toArgv } from '@shareable-scripts/core';
+import { commander, toArgv } from '@ctp-fe-scripts/core';
 import { execa, execaCommandSync } from 'execa';
 import { createEditor } from 'properties-parser';
 

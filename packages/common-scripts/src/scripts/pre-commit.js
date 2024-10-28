@@ -6,7 +6,7 @@
 /* eslint no-unused-vars: "warn" */
 import path from 'node:path';
 import url from 'node:url';
-import { commander, toArgv } from '@shareable-scripts/core';
+import { commander, toArgv } from '@ctp-fe-scripts/core';
 import { execa, execaCommandSync } from 'execa';
 import { findConfigUp } from '../utils.js';
 import * as pkg from '../package-manager.js';

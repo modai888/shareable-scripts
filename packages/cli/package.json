@@ -1,11 +1,11 @@
 {
-  "name": "@shareable-scripts/cli",
+  "name": "@ctp-fe-scripts/cli",
   "version": "0.1.10",
   "description": "可共享脚本运行框架命令行程序",
   "main": "index.js",
   "type": "module",
   "bin": {
-    "shareable-scripts": "lib/cli.js"
+    "ctp-fe-scripts": "lib/cli.js"
   },
   "files": [
     "lib"
@@ -24,7 +24,7 @@
     "node": ">=16"
   },
   "dependencies": {
-    "@shareable-scripts/core": "workspace:^"
+    "@ctp-fe-scripts/core": "workspace:^"
   },
   "devDependencies": {
     "@types/node": "^20.11.26",

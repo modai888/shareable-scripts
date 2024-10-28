@@ -11,8 +11,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@shareable-scripts/common-scripts": "workspace:^",
-    "@shareable-scripts/cli": "workspace:^",
+    "@ctp-fe-scripts/common-scripts": "workspace:^",
+    "@ctp-fe-scripts/cli": "workspace:^",
     "usage-demo": "workspace:^"
   },
   "dependencies": {
