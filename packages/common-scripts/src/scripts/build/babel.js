@@ -5,8 +5,7 @@
  */
 import path from 'node:path';
 import url from 'node:url';
-import { createApplicationPackage } from '@ctp-fe-scripts/core';
-import { execa, execaCommandSync } from 'execa';
+import { execa } from '@ctp-fe-scripts/core';
 import * as pkg from '../../package-manager.js';
 
 let __dirname;
@@ -37,7 +36,7 @@ const here = (p) => path.join(__dirname, p);
 const hereRelative = (p) => here(p).replace(process.cwd(), '.');
 
 const execute = (command) => {
-  const { stdout } = execaCommandSync(command, {
+  const { stdout } = execa.execaCommandSync(command, {
     encoding: 'utf8',
     preferLocal: true,
     localDir: path.resolve(__dirname, '../..'),
@@ -60,7 +59,7 @@ const run = async (args) => {
     args.push('--out-dir', 'lib');
   }
 
-  return execa('babel', [...args, 'src'], {
+  return execa.execa('babel', [...args, 'src'], {
     verbose: true,
     preferLocal: true,
     localDir: path.resolve(__dirname, '../..'),

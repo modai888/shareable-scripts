@@ -6,8 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
-import { commander, toArgv } from '@ctp-fe-scripts/core';
-import { execa, execaCommandSync } from 'execa';
+import { commander, execa, toArgv } from '@ctp-fe-scripts/core';
 import { createEditor } from 'properties-parser';
 
 let __dirname;
@@ -21,7 +20,7 @@ let __dirname;
 }
 
 const execute = (command) => {
-  const { stdout } = execaCommandSync(command, {
+  const { stdout } = execa.execaCommandSync(command, {
     encoding: 'utf8',
     preferLocal: true,
     localDir: path.resolve(__dirname, '../..'),
@@ -205,7 +204,7 @@ async function action(files, options, command) {
 
   async function execute(params) {
     console.log(params);
-    await execa('jscodeshift', params, {
+    await execa.execa('jscodeshift', params, {
       verbose: true,
       preferLocal: true,
       localDir: path.resolve(__dirname, '../..'),

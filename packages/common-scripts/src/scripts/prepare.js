@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 import semver from 'semver';
-import { execa, execaCommandSync } from 'execa';
+import { execa } from '@ctp-fe-scripts/core';
 import { findConfigUp } from '../utils.js';
 import * as pkg from '../package-manager.js';
 
@@ -24,7 +24,7 @@ let __dirname;
 const here = (p) => path.join(__dirname, p);
 
 const execute = (command) => {
-  const { stdout } = execaCommandSync(command, {
+  const { stdout } = execa.execaCommandSync(command, {
     encoding: 'utf8',
     preferLocal: true,
     localDir: path.resolve(__dirname, '../..'),
@@ -51,7 +51,7 @@ export default (command) => {
 
       // check git
       {
-        const version = await execa('git version', { encoding: 'utf8' });
+        const version = await execa.execa('git version', { encoding: 'utf8' });
 
         if (version.exitCode == 0) {
           const ver = version.stdout.match(/([\d+.]+[\d])/)?.[0];

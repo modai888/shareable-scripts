@@ -3,8 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
-import { commander, toArgv } from '@ctp-fe-scripts/core';
-import { execa, execaCommandSync } from 'execa';
+import { commander, execa, toArgv } from '@ctp-fe-scripts/core';
 import * as pkg from '../package-manager.js';
 import { findConfigUp } from '../utils.js';
 
@@ -36,7 +35,7 @@ const _PRETTIER_CONFIG_FILES = [
 // const _PRETTIER_IGNORE_FILES = ['.gitignore', '.prettierignore'];
 
 const execute = (command) => {
-  const { stdout } = execaCommandSync(command, {
+  const { stdout } = execa.execaCommandSync(command, {
     encoding: 'utf8',
     preferLocal: true,
     localDir: path.resolve(__dirname, '../..'),
@@ -188,7 +187,7 @@ async function action(files, options, command) {
   //   console.log('args: ', command.args);
   //   console.log(params);
 
-  await execa('prettier', params, {
+  await execa.execa('prettier', params, {
     verbose: true,
     preferLocal: true,
     localDir: path.resolve(__dirname, '../..'),

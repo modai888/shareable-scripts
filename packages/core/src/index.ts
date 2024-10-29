@@ -11,3 +11,4 @@ export * from './utils.js';
 export * from './run.js';
 
 export * as commander from 'commander';
+export * as execa from 'execa';

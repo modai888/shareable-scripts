@@ -6,8 +6,7 @@
 /* eslint no-unused-vars: "warn" */
 import path from 'node:path';
 import url from 'node:url';
-import { commander, toArgv } from '@ctp-fe-scripts/core';
-import { execa, execaCommandSync } from 'execa';
+import { commander, execa, toArgv } from '@ctp-fe-scripts/core';
 import { findConfigUp } from '../utils.js';
 import * as pkg from '../package-manager.js';
 
@@ -37,7 +36,7 @@ const _CONFIG_FILES = [
 // const _IGNORE_FILES = ['.gitignore', '.eslintignore'];
 
 const execute = (command) => {
-  const { stdout } = execaCommandSync(command, {
+  const { stdout } = execa.execaCommandSync(command, {
     encoding: 'utf8',
     preferLocal: true,
     localDir: path.resolve(__dirname, '../..'),
@@ -142,7 +141,7 @@ async function action(options, command) {
     input = JSON.stringify(config.default ?? config);
   }
 
-  await execa('lint-staged', params, {
+  await execa.execa('lint-staged', params, {
     verbose: true,
     preferLocal: true,
     localDir: path.resolve(__dirname, '../..'),
