@@ -97,6 +97,7 @@ program
   .addOption(
     new commander.Option('--check-syntax', '检查代码是否存在多语抽取的语法错误').default(false).implies({ dry: true })
   )
+  .addOption(new commander.Option('--update-multilangconfig', '是否允许更新配置').default(true))
   .addOption(new commander.Option('--revert', '移除多语抽取，恢复代码').default(false))
 
   .addOption(
@@ -130,6 +131,7 @@ async function action(files, options, command) {
     '--fix': toArgvIgnore,
     '--remove-comments': toArgvIgnore,
     '--check-syntax': toArgvIgnore,
+    '--update-multilangconfig': toArgvIgnore,
     '--revert': toArgvIgnore,
   });
 
@@ -141,34 +143,36 @@ async function action(files, options, command) {
 
   // 分析工程多语配置
   {
-    const multilangconfig = path.resolve('multilangconfig.properties');
-    if (fs.existsSync(multilangconfig)) {
-      console.log(`Found multilangconfig.properties config file: ${multilangconfig}`);
-      const editor = createEditor({ path: multilangconfig });
+    if (options.updateMultilangconfig) {
+      const multilangconfig = path.resolve('multilangconfig.properties');
+      if (fs.existsSync(multilangconfig)) {
+        console.log(`Found multilangconfig.properties config file: ${multilangconfig}`);
+        const editor = createEditor({ path: multilangconfig });
 
-      const lineexclude = editor.get('lineexclude');
+        const lineexclude = editor.get('lineexclude');
 
-      const rules = lineexclude.split(';');
+        const rules = lineexclude.split(';');
 
-      const additions = [
-        `(cb\\.)?lang\\.templateByUuid`,
-        `\\{\\{\\s*translate\\(`,
-        `\\/\\*\\s*@ignore-extract-line\\s*\\*\\/`,
-        `html-ignore-lang`,
-        `\\s*(console|logger)\\.(debug|info|log|warn|error)\\(`,
-        `import[\\s\\S]+from\\s*[\\S]+`,
-      ].filter((rule) => !rules.includes(rule));
+        const additions = [
+          `(cb\\.)?lang\\.templateByUuid`,
+          `\\{\\{\\s*translate\\(`,
+          `\\/\\*\\s*@ignore-extract-line\\s*\\*\\/`,
+          `html-ignore-lang`,
+          `\\s*(console|logger)\\.(debug|info|log|warn|error)\\(`,
+          `import[\\s\\S]+from\\s*[\\S]+`,
+        ].filter((rule) => !rules.includes(rule));
 
-      if (additions.length) {
-        rules.push(...additions);
-        editor.set('lineexclude', rules.map((rule) => rule.replace(/\\/g, '\\\\')).join(';'));
+        if (additions.length) {
+          rules.push(...additions);
+          editor.set('lineexclude', rules.map((rule) => rule.replace(/\\/g, '\\\\')).join(';'));
 
-        await new Promise((resolve) => {
-          editor.save(resolve);
-        });
+          await new Promise((resolve) => {
+            editor.save(resolve);
+          });
+        }
+      } else {
+        console.log("Can't multilangconfig.properties config file.");
       }
-    } else {
-      console.log("Can't multilangconfig.properties config file.");
     }
   }
 
