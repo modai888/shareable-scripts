@@ -96,7 +96,7 @@ program
   .addOption(
     new commander.Option('--check-syntax', '检查代码是否存在多语抽取的语法错误').default(false).implies({ dry: true })
   )
-  .addOption(new commander.Option('--update-multilangconfig', '是否允许更新配置').default(true))
+  .addOption(new commander.Option('--update-multilangconfig', '是否允许更新配置').default(false))
   .addOption(new commander.Option('--revert', '移除多语抽取，恢复代码').default(false))
 
   .addOption(
