@@ -34,5 +34,11 @@ export default {
       description: 'Refactor your code to solve the multilingual extraction problems.',
       executableFile: './lib/scripts/multilang/index.js',
     },
+
+    {
+      nameAndArgs: 'jscodeshift',
+      description: 'Refactor your code',
+      executableFile: './lib/scripts/jscodeshift.js',
+    },
   ],
 };

@@ -35,6 +35,12 @@ const scripts = [
     description: 'Refactor your code to solve the multilingual extraction problems.',
     executableFile: './src/scripts/multilang/index.js',
   },
+
+  {
+    nameAndArgs: 'jscodeshift',
+    description: 'Refactor your code',
+    executableFile: './lib/scripts/jscodeshift.js',
+  },
 ];
 
 run(scripts);

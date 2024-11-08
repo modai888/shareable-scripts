@@ -87,7 +87,7 @@ program
   .addOption(new commander.Option('--stdin').default(false).hideHelp())
   .addOption(new commander.Option('--no-stdin').hideHelp())
 
-  //   .addOption(new commander.Option('--transform <path>').hideHelp())
+  .addOption(new commander.Option('--transform <path>').hideHelp())
 
   .addOption(new commander.Option('--verbose <verbose>').hideHelp().default(0).choices(['0', '1', '2']))
 
@@ -177,33 +177,41 @@ async function action(files, options, command) {
 
   const trim = (s) => s.replace(/^\s+|\s+$/, '');
   const problems = options.fix?.split(',').map(trim) ?? [];
+
+  let running = false;
   if (problems.includes('linebreak')) {
+    running = true;
     await execute(['--transform', hereRelative('./transforms/transform_fix-linebreak.cjs'), ...params]);
   }
 
   if (problems.includes('repeatextraction')) {
+    running = true;
     await execute(['--transform', hereRelative('./transforms/transform_fix-repeatextraction.cjs'), ...params]);
   }
 
   // 移除注释
   if (options.removeComments) {
+    running = true;
     await execute(['--transform', hereRelative('./transforms/transform_remove_comment.cjs'), ...params]);
   }
 
   // 恢复多语代码
   if (options.revert) {
+    running = true;
     await execute(['--transform', hereRelative('./transforms/transform_revert.cjs'), ...params]);
   }
 
   // 代码语法检查
   if (options.checkSyntax) {
+    running = true;
     await execute(['--transform', hereRelative('./transforms/transform_check-syntax.cjs'), ...params]);
   }
 
-  //
+  if (!running) {
+    await execute([...params]);
+  }
 
   async function execute(params) {
-    console.log(params);
     await execa.execa('jscodeshift', params, {
       verbose: true,
       preferLocal: true,
