@@ -1,6 +1,6 @@
 {
   "name": "@ctp-fe-scripts/cli",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "可共享脚本运行框架命令行程序",
   "main": "index.js",
   "type": "module",
