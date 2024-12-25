@@ -81,7 +81,12 @@ program
   )
   .addOption(new commander.Option('--no-editorconfig').hideHelp())
   .addOption(new commander.Option('--find-config-path <path>').hideHelp())
-  .addOption(new commander.Option('--ignore-path <path>').hideHelp().default([]).argParser(collectOptionArgs))
+  .addOption(
+    new commander.Option('--ignore-path <path>')
+      .hideHelp()
+      .default(['.gitignore', '.prettierignore'])
+      .argParser(collectOptionArgs)
+  )
   .addOption(new commander.Option('--plugin <path>').hideHelp().default([]).argParser(collectOptionArgs))
   .addOption(new commander.Option('--with-node-modules').hideHelp())
   // Editor options:
@@ -151,7 +156,7 @@ async function action(files, options, command) {
       const useUserConfig = ignores.length || hasUserIgnoreConfig();
 
       // add gitignore
-      if (!ignores.some((ignore) => ignore.endWith('.gitignore'))) {
+      if (ignores?.length && !ignores.some((ignore) => ignore.endsWith('.gitignore'))) {
         const gitignore = path.resolve('.gitignore');
         if (fs.existsSync(gitignore)) {
           ignores.push(rootRelative('.gitignore'));
