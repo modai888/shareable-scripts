@@ -21,6 +21,9 @@
     "@ctp-fe-scripts/common-scripts": "workspace:^"
   },
   "dependencies": {
-    "@ctp-fe-scripts/core": "workspace:^"
+    "@ctp-fe-scripts/core": "workspace:^",
+    "chalk": "4.1.2",
+    "js-yaml": "^4.1.0",
+    "shx": "^0.3.4"
   }
 }
