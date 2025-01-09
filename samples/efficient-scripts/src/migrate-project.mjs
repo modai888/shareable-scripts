@@ -23,7 +23,7 @@ let __dirname;
 }
 
 const execute = async (command, options = {}) => {
-  console.log(chalk.blue(`$$ ${command}`));
+  console.log(chalk.greenBright(`$$ ${command}`));
 
   return await execaCommand(command, {
     encoding: 'utf8',
@@ -60,13 +60,27 @@ const readpkg = (file) => {
   return pkg;
 };
 
-export default (command) => {
-  const pkg = readpkg('./package.json');
+const isValidGitDir = async (dir) => {
+  try {
+    await $({ cwd: dir })`git branch --show-current`;
+    return true;
+  } catch (error) {
+    return !/not a git repository/.test(error.message);
+  }
+};
 
+const warn = (message) => {
+  console.warn(chalk.yellowBright.bgYellow(message));
+};
+
+export default (command) => {
   command
     .name('$migrate-project')
     .description('Migrating your project.')
     .version('0.0.1')
+    .option('--project-dir <path>', '指定目标工程根目录')
+    .option('--project-giturl <giturl>', '指定目标工程仓库地址')
+    .option('--project-migration-branch <branch>', '指定目标工程的迁移基准分支', 'main-merge')
     .option('-b, --branch <branchs...>', '指定迁移分支', [])
     .option('--app <apps...>', '指定要迁移的工程信息', [])
     .option('--appdir <dir>', '指定代码迁移到的子目录', '')
@@ -74,10 +88,70 @@ export default (command) => {
     .option('--update-workspace-yaml', '是否更新pnpm-worksapce.yaml配置', false)
     .option('--update-build-scripts', '是否更新scripts脚本', false)
     .option('--update-module-xml', '是否写入module.xml文件', false)
-
     // .option("--gituser <gituser>", "拥有工程权限的GIT用户名", [])
     // .option("--gitpwd <gitpwd>", "拥有工程权限的GIT用户密码", [])
+
     .action(async (options, command) => {
+      const cwd = process.cwd();
+      const tempDir = os.tmpdir();
+      const resolve = (...args) => path.resolve(cwd, ...args);
+
+      // 指定目标工程目录信息
+      let projectDir = options.projectDir;
+      let projectGiturl = options.projectGiturl;
+
+      if (!projectDir && !projectGiturl) {
+        warn('您未指定工程目录或仓库信息，将以当前目录为工程根目录');
+        projectDir = cwd;
+      }
+
+      if (projectDir) {
+        const isGitDir = await isValidGitDir(projectDir);
+
+        if (isGitDir) {
+          projectGiturl && warn('同时指定 --project-dir 和 --project-giturl 时，将忽略参数 --project-giturl');
+        } else {
+          warn(`参数 --project-dir "${projectDir}" 不是一个有效的GIT工程目录`);
+          projectDir = null;
+        }
+      }
+
+      console.log('--project-giturl', projectGiturl);
+      console.log('--project-migration-branch', options.projectMigrationBranch);
+
+      if (!projectDir && projectGiturl) {
+        warn(`检测到您指定了--project-giturl "${projectGiturl}" 仓库地址，将尝试克隆仓库代码作为项目目录`);
+
+        // 用户输入的工程仓库地址
+        const urlToPath = projectGiturl.replace(/\/*$/, '').replace(/[&@:=#%\/\.\?\+\s]+/g, '_');
+        projectDir = resolve(tempDir, `${urlToPath}_git`);
+
+        // 删除原有代码克隆目录
+        if (fs.existsSync(projectDir)) {
+          await execute(`shx rm -rf ${projectDir}`);
+        }
+
+        // 克隆应用指定分支的代码
+        await execute(`git clone -b ${options.projectMigrationBranch} ${projectGiturl} ${projectDir}`, {});
+      }
+
+      if (!projectDir) {
+        throw new Error(
+          [
+            '请使用 --project-dir 或 --project-giturl 指定要目标工程信息，或在目标工程目录下执行命令\n',
+            '同时指定 --project-dir 和 --project-giturl 时，如果 --project-dir 为有效的GIT目录，将忽略 --project-giturl 参数',
+            '同时忽略 --project-dir 和 --project-giturl 时，将以当前目录作为参数 --project-dir 的值，请确保当前目录是一个有效的GIT工程目录',
+            '如果指定 --project-giturl 时，将使用此地址客隆代码并将目标目录作为参数 --project-dir 的值',
+            '如果指定 --project-dir 时，此目录必须是一个有效的GIT工程目录',
+          ].join('\n')
+        );
+      }
+
+      console.log('--project-dir', projectDir);
+
+      // 读取工程的包信息
+      const pkg = readpkg(resolve(projectDir, 'package.json'));
+
       // 待迁移分支
       const branchs = options.branch.filter(Boolean).map((branch) => {
         const [target, source] = branch.split('::');
@@ -108,10 +182,6 @@ export default (command) => {
           ].join('\n')
         );
       }
-
-      const tempDir = os.tmpdir();
-      const cwd = process.cwd();
-      const resolve = (...args) => path.resolve(cwd, ...args);
 
       console.log('--branchs', branchs);
       console.log('--apps', apps);
@@ -184,7 +254,7 @@ export default (command) => {
       };
 
       // 迁移指定工程的指定分支代码
-      const migrate = async (app, gitUrl, tbranch, sbranch) => {
+      const migrate = async (projectDir, app, gitUrl, sbranch) => {
         // 创建应用代码克隆目录
         const tmpGitCloneDir = resolve(tempDir, `${app}_${sbranch}_git`);
         // 删除原有代码克隆目录
@@ -237,20 +307,21 @@ export default (command) => {
         // 关联远程仓库到本项目
         const { stdout: remote } = await execute(`git remote -v`, {
           stdout: 'pipe',
+          cwd: projectDir,
         });
 
         const isRemoteAdded = remote.split('\n').some((r) => r.startsWith(`${app}\t`));
         if (!isRemoteAdded) {
-          await execute(`git remote add ${app} ${gitUrl}`, {});
+          await execute(`git remote add ${app} ${gitUrl}`, { cwd: projectDir });
         }
 
         // 拉取代码到本项目
-        await execute(`git pull ${app} ${migrationBranch} --allow-unrelated-histories --no-edit`, {});
+        await execute(`git pull ${app} ${migrationBranch} --allow-unrelated-histories --no-edit`, { cwd: projectDir });
 
         // 修改部分scripts脚本命令中的路径
         if (options.updateBuildScripts) {
-          const appdir = resolve('apps', options.appdir, app);
-          const pathprefix = path.relative(appdir, cwd).replace(/\\/g, '/');
+          const appdir = resolve(projectDir, 'apps', options.appdir, app);
+          const pathprefix = path.relative(appdir, projectDir).replace(/\\/g, '/');
 
           const pkgpath = resolve(appdir, 'package.json');
           const pkg = readpkg(pkgpath);
@@ -271,7 +342,7 @@ export default (command) => {
       };
 
       const tbranchs = branchs.map((b) => b[0]);
-      const tBranchInfos = await getBranchInfo(cwd, tbranchs);
+      const tBranchInfos = await getBranchInfo(projectDir, tbranchs);
 
       for (let [tbranch, sbranch] of branchs) {
         const { isCurrentBranch, isLocalBranch, isRemoteBranch } = tBranchInfos[tbranch];
@@ -279,31 +350,31 @@ export default (command) => {
         if (!isCurrentBranch) {
           if (!options.remainTargetBranch) {
             if (isLocalBranch) {
-              await execute(`git branch -D ${tbranch}`, {});
+              await execute(`git branch -D ${tbranch}`, { cwd: projectDir });
             }
 
             if (isRemoteBranch) {
-              await execute(`git push origin --delete ${tbranch}`, {});
+              await execute(`git push origin --delete ${tbranch}`, { cwd: projectDir });
             }
 
-            await execute(`git checkout -b ${tbranch}`, {});
-            await execute(`git push --set-upstream origin ${tbranch}`, {});
+            await execute(`git checkout -b ${tbranch}`, { cwd: projectDir });
+            await execute(`git push --set-upstream origin ${tbranch}`, { cwd: projectDir });
           } else {
             if (!isLocalBranch && !isRemoteBranch) {
               // 分支不存在
-              await execute(`git checkout -b ${tbranch}`, {});
+              await execute(`git checkout -b ${tbranch}`, { cwd: projectDir });
             } else {
-              await execute(`git checkout ${tbranch}`, {});
+              await execute(`git checkout ${tbranch}`, { cwd: projectDir });
             }
 
             if (isRemoteBranch) {
-              await execute(`git push --set-upstream origin ${tbranch}`, {});
+              await execute(`git push --set-upstream origin ${tbranch}`, { cwd: projectDir });
             }
           }
         }
 
         for (let [app, gitUrl] of apps) {
-          await migrate(app, gitUrl, tbranch, sbranch);
+          await migrate(projectDir, app, gitUrl, sbranch);
         }
 
         // update module.xml
@@ -326,21 +397,25 @@ export default (command) => {
 </module>
                   `;
 
-          if (!fs.existsSync(resolve('apps', options.appdir))) {
-            await execute(`shx mkdir -p ${resolve('apps', options.appdir)}`);
+          if (!fs.existsSync(resolve(projectDir, 'apps', options.appdir))) {
+            await execute(`shx mkdir -p ${resolve(projectDir, 'apps', options.appdir)}`);
           }
 
           // 写入apps目录
-          fs.writeFileSync(resolve('apps', options.appdir, 'module.xml'), content.trim(), {
+          fs.writeFileSync(resolve(projectDir, 'apps', options.appdir, 'module.xml'), content.trim(), {
             flag: 'w',
             encoding: 'utf8',
           });
 
           // 写入根目录
-          fs.writeFileSync(resolve(options.appdir ? `${options.appdir}-module.xml` : 'module.xml'), content.trim(), {
-            flag: 'w',
-            encoding: 'utf8',
-          });
+          fs.writeFileSync(
+            resolve(projectDir, options.appdir ? `${options.appdir}-module.xml` : 'module.xml'),
+            content.trim(),
+            {
+              flag: 'w',
+              encoding: 'utf8',
+            }
+          );
 
           await commit(cwd, 'chore: update module.xml', {
             branch: tbranch,
@@ -351,7 +426,7 @@ export default (command) => {
         if (options.updateWorkspaceYaml) {
           console.log(chalk.yellow('updating pnpm-workspace.yaml file'));
 
-          const file = resolve('pnpm-workspace.yaml');
+          const file = resolve(projectDir, 'pnpm-workspace.yaml');
           await updateYamlFile(file, (doc) => {
             doc.packages = doc.packages || [];
             doc.packages = doc.packages.filter((p) => p !== 'apps/*' && p !== `apps/${options.appdir}/*`);
@@ -360,25 +435,10 @@ export default (command) => {
             doc.packages.sort();
           });
 
-          await commit(cwd, 'chore: update pnpm-workspace.yaml', {
+          await commit(projectDir, 'chore: update pnpm-workspace.yaml', {
             branch: tbranch,
           });
         }
-
-        // // 代码格式化
-        // await execute(`ctp-fe-scripts format ./apps/${options.appdir}`, {});
-
-        // // 修复多语抽取问题
-        // const params = [];
-        // if (fs.existsSync('.prettierignore')) {
-        //   params.push('--ignore-config .prettierignore');
-        // }
-        // await execute(
-        //   `ctp-fe-scripts multilang --fix linebreak,repeatextraction ${params.join(' ')} ./apps/${options.appdir}`
-        // );
-        // await commit(cwd, 'refactor: format codes', {
-        //   branch: tbranch,
-        // });
       }
     });
 
