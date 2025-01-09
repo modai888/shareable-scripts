@@ -1,0 +1,26 @@
+{
+  "name": "@ctp-fe-scripts/efficient-scripts",
+  "version": "15.2.100",
+  "description": "资税项-前端提效脚本集",
+  "main": "index.js",
+  "files": [
+    "src",
+    "scripts.config.js"
+  ],
+  "scripts": {
+    "build": "echo \"build efficient-scripts\"",
+    "format": "ctp-fe-scripts format --log-level debug src",
+    "lint": "ctp-fe-scripts lint-es",
+    "npm-script:debug": "ctp-fe-scripts lint-es"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@ctp-fe-scripts/cli": "workspace:^",
+    "@ctp-fe-scripts/common-scripts": "workspace:^"
+  },
+  "dependencies": {
+    "@ctp-fe-scripts/core": "workspace:^"
+  }
+}
