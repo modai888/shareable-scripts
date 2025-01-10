@@ -122,7 +122,7 @@ async function action(files, options, command) {
 
   const params = toArgv(command, {
     '--ignore-config': (key, option, value) => {
-      if (value?.length) return ['--ignore-config', value];
+      if (value?.length) return value.map((v) => ['--ignore-config', v]);
 
       return ['--ignore-config', hereRelative('../../config/multilangignore')];
     },
