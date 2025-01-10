@@ -30,3 +30,12 @@ pnpm --filter ./samples/efficient-scripts exec ctp-fe-scripts $backup-branch --h
 pnpm --filter ./samples/efficient-scripts exec ctp-fe-scripts $backup-branch --project-dir D:\Work\02-projects\sscplatform\yonbip-fi-ctmlc-fe --branch develop daily release
 
 ```
+
+## 分支代码格式化 $format-code
+
+```bash
+pnpm --filter ./samples/efficient-scripts exec ctp-fe-scripts $format-project --help
+
+pnpm --filter ./samples/efficient-scripts exec ctp-fe-scripts $format-project --project-dir D:\Work\02-projects\sscplatform\yonbip-fi-ctmlc-fe --branch develop-merge --no-auto-commit ./apps ./packages
+
+```
