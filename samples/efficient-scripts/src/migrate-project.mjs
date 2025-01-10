@@ -70,7 +70,11 @@ const isValidGitDir = async (dir) => {
 };
 
 const warn = (message) => {
-  console.warn(chalk.yellowBright.bgYellow(message));
+  console.log(chalk.yellowBright.bgYellow('[WARNING]', message));
+};
+
+const info = (message) => {
+  console.log(chalk.magentaBright('[INFO]', message));
 };
 
 export default (command) => {
@@ -80,7 +84,7 @@ export default (command) => {
     .version('0.0.1')
     .option('--project-dir <path>', '指定目标工程根目录')
     .option('--project-giturl <giturl>', '指定目标工程仓库地址')
-    .option('--project-migration-branch <branch>', '指定目标工程的迁移基准分支', 'main-merge')
+    .option('--project-migration-base-branch <branch>', '指定目标工程的迁移基准分支', 'main-merge')
     .option('-b, --branch <branchs...>', '指定迁移分支', [])
     .option('--app <apps...>', '指定要迁移的工程信息', [])
     .option('--appdir <dir>', '指定代码迁移到的子目录', '')
@@ -92,6 +96,7 @@ export default (command) => {
     // .option("--gitpwd <gitpwd>", "拥有工程权限的GIT用户密码", [])
 
     .action(async (options, command) => {
+      let needCleanProjectDir = false;
       const cwd = process.cwd();
       const tempDir = os.tmpdir();
       const resolve = (...args) => path.resolve(cwd, ...args);
@@ -117,7 +122,7 @@ export default (command) => {
       }
 
       console.log('--project-giturl', projectGiturl);
-      console.log('--project-migration-branch', options.projectMigrationBranch);
+      console.log('--project-migration-branch', options.projectMigrationBaseBranch);
 
       if (!projectDir && projectGiturl) {
         warn(`检测到您指定了--project-giturl "${projectGiturl}" 仓库地址，将尝试克隆仓库代码作为项目目录`);
@@ -132,7 +137,8 @@ export default (command) => {
         }
 
         // 克隆应用指定分支的代码
-        await execute(`git clone -b ${options.projectMigrationBranch} ${projectGiturl} ${projectDir}`, {});
+        await execute(`git clone -b ${options.projectMigrationBaseBranch} ${projectGiturl} ${projectDir}`, {});
+        needCleanProjectDir = true;
       }
 
       if (!projectDir) {
@@ -148,6 +154,9 @@ export default (command) => {
       }
 
       console.log('--project-dir', projectDir);
+
+      // 切换到工程的迁移基准分支
+      await execute(`git checkout ${options.projectMigrationBaseBranch}`, { cwd: projectDir });
 
       // 读取工程的包信息
       const pkg = readpkg(resolve(projectDir, 'package.json'));
@@ -262,8 +271,13 @@ export default (command) => {
           await execute(`shx rm -rf ${tmpGitCloneDir}`);
         }
 
-        // 克隆应用指定分支的代码
-        await execute(`git clone -b ${sbranch} ${gitUrl} ${tmpGitCloneDir}`, {});
+        try {
+          // 克隆应用指定分支的代码
+          await execute(`git clone -b ${sbranch} ${gitUrl} ${tmpGitCloneDir}`, {});
+        } catch (error) {
+          warn(error.message);
+          return;
+        }
 
         // 按迁移目录结构调整代码目录
         const migrationBranch = `${sbranch}_migration`;
@@ -417,7 +431,7 @@ export default (command) => {
             }
           );
 
-          await commit(cwd, 'chore: update module.xml', {
+          await commit(projectDir, 'chore: update module.xml', {
             branch: tbranch,
           });
         }
@@ -439,6 +453,10 @@ export default (command) => {
             branch: tbranch,
           });
         }
+      }
+
+      if (needCleanProjectDir) {
+        await execute(`shx rm -rf ${projectDir}`);
       }
     });
 
