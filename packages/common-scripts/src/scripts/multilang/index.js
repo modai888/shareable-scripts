@@ -156,6 +156,7 @@ async function action(files, options, command) {
           `(cb\\.)?lang\\.templateByUuid`,
           `\\{\\{\\s*translate\\(`,
           `\\/\\*\\s*@ignore-extract-line\\s*\\*\\/`,
+          `\\/\\*\\s*@notranslate\\s*\\*\\/`,
           `html-ignore-lang`,
           `\\s*(console|logger)\\.(debug|info|log|warn|error)\\(`,
           `import[\\s\\S]+from\\s*[\\S]+`,
@@ -178,10 +179,20 @@ async function action(files, options, command) {
   const trim = (s) => s.replace(/^\s+|\s+$/, '');
   const problems = options.fix?.split(',').map(trim) ?? [];
 
+  if (problems.includes('linebreak') && problems.includes('linebreak2')) {
+    console.warn('[multilang] --fix参数不能同时包含"linebreak"和"linebreak2"，同时存在时以"linebreak2"为准');
+    problems.splice(problems.indexOf('linebreak'), 1);
+  }
+
   let running = false;
   if (problems.includes('linebreak')) {
     running = true;
     await execute(['--transform', hereRelative('./transforms/transform_fix-linebreak.cjs'), ...params]);
+  }
+
+  if (problems.includes('linebreak2')) {
+    running = true;
+    await execute(['--transform', hereRelative('./transforms/transform_fix-linebreak2.cjs'), ...params]);
   }
 
   if (problems.includes('repeatextraction')) {

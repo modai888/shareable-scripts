@@ -80,6 +80,12 @@ program
 
   .addOption(new commander.Option('--no-lint', 'do not eslint your code'))
   .addOption(new commander.Option('--no-multilang', 'do not fix multilang extraction problems in your code'))
+  .addOption(
+    new commander.Option(
+      '--no-check-multilangconfigfile',
+      'do not check multilang configuration file before running multilang comand.'
+    )
+  )
 
   .addOption(new commander.Option('--allow-empty').hideHelp().default(false))
   .addOption(new commander.Option('-p, --concurrent [number]').hideHelp().default(true).argParser(concurrentOptionArgs))
@@ -129,17 +135,25 @@ async function action(options, command) {
 
     '--no-lint': toArgvIgnore,
     '--no-multilang': toArgvIgnore,
+    '--no-check-multilangconfigfile': toArgvIgnore,
   });
+
+  //   console.log(`findConfigUp(['multilangconfig.properties']): `, findConfigUp(['multilangconfig.properties']));
+
+  if (options.multilang && options.checkMultilangconfigfile && !findConfigUp(['multilangconfig.properties'])) {
+    process.argv.push('--no-multilang');
+  }
 
   let input;
   // 支持将argv参数传入到../config/lintstaged.cjs默认配置
   if (configFile) {
-    if (options.multilang && !findConfigUp(['multilangconfig.properties'])) {
-      process.argv.push('--no-multilang');
-    }
     const config = await import(url.pathToFileURL(configFile));
     input = JSON.stringify(config.default ?? config);
   }
+
+  console.log('--no-lint', options.lint);
+  console.log('--no-multilang', options.multilang);
+  console.log('--no-check-multilangconfigfile', options.checkMultilangconfigfile);
 
   await execa.execa('lint-staged', params, {
     verbose: true,
