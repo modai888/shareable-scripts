@@ -101,6 +101,7 @@ export default (command) => {
       const tempDir = os.tmpdir();
       const resolve = (...args) => path.resolve(cwd, ...args);
 
+      info('解析工程信息');
       // 指定目标工程目录信息
       let projectDir = options.projectDir;
       let projectGiturl = options.projectGiturl;
@@ -154,9 +155,6 @@ export default (command) => {
       }
 
       console.log('--project-dir', projectDir);
-
-      // 切换到工程的迁移基准分支
-      await execute(`git checkout ${options.projectMigrationBaseBranch}`, { cwd: projectDir });
 
       // 读取工程的包信息
       const pkg = readpkg(resolve(projectDir, 'package.json'));
@@ -266,13 +264,16 @@ export default (command) => {
       const migrate = async (projectDir, app, gitUrl, sbranch) => {
         // 创建应用代码克隆目录
         const tmpGitCloneDir = resolve(tempDir, `${app}_${sbranch}_git`);
+        info(`> [migration] 临时代码克隆目录 [${tmpGitCloneDir}]`);
         // 删除原有代码克隆目录
         if (fs.existsSync(tmpGitCloneDir)) {
+          info(`> [migration] 临时代码克隆目录清理`);
           await execute(`shx rm -rf ${tmpGitCloneDir}`);
         }
 
         try {
           // 克隆应用指定分支的代码
+          info(`> [migration] 克隆应用代码`);
           await execute(`git clone -b ${sbranch} ${gitUrl} ${tmpGitCloneDir}`, {});
         } catch (error) {
           warn(error.message);
@@ -281,11 +282,14 @@ export default (command) => {
 
         // 按迁移目录结构调整代码目录
         const migrationBranch = `${sbranch}_migration`;
+        info(`> [migration] 按迁移目录结构调整代码目录，调整分支 [${migrationBranch}]`);
         const branchInfos = await getBranchInfo(tmpGitCloneDir, [migrationBranch]);
 
         // 创建迁移分支
         const { isCurrentBranch, isLocalBranch, isRemoteBranch } = branchInfos[migrationBranch];
         if (!isCurrentBranch) {
+          info(`> [migration] 重建调整分支 [${migrationBranch}]`);
+
           if (isLocalBranch) {
             await execute(`git branch -D ${migrationBranch}`, {
               cwd: tmpGitCloneDir,
@@ -303,6 +307,7 @@ export default (command) => {
           });
         }
 
+        info(`> [migration] 调整代码结构`);
         // 调整代码结构
         const dir = resolve(tmpGitCloneDir, 'apps', options.appdir, app);
         await execute(`shx mkdir -p ${dir}`);
@@ -313,11 +318,13 @@ export default (command) => {
           await execute(`shx mv -f ${tmpGitCloneDir}/${file}  ${dir}`, {});
         }
 
+        info(`> [migration] 提交调整结构后的代码`);
         await commit(tmpGitCloneDir, `refactor: reorganize code for migrating project ${app}`, {
           force: true,
           branch: migrationBranch,
         });
 
+        info(`> [migration] 将调整后的代码拉取到目标工程`);
         // 关联远程仓库到本项目
         const { stdout: remote } = await execute(`git remote -v`, {
           stdout: 'pipe',
@@ -334,6 +341,8 @@ export default (command) => {
 
         // 修改部分scripts脚本命令中的路径
         if (options.updateBuildScripts) {
+          info(`> [migration] 调整 scripts 脚本命令中的命令行程序引用路径`);
+
           const appdir = resolve(projectDir, 'apps', options.appdir, app);
           const pathprefix = path.relative(appdir, projectDir).replace(/\\/g, '/');
 
@@ -355,14 +364,23 @@ export default (command) => {
         }
       };
 
+      info('查询工程分支信息');
       const tbranchs = branchs.map((b) => b[0]);
       const tBranchInfos = await getBranchInfo(projectDir, tbranchs);
 
+      info(JSON.stringify(tBranchInfos, null, '    '));
+
       for (let [tbranch, sbranch] of branchs) {
+        // 切换到迁移基准分支
+        await execute(`git checkout ${options.projectMigrationBaseBranch}`, { cwd: projectDir });
+
+        info(`开始进行源分支 [${sbranch}] 处理`);
         const { isCurrentBranch, isLocalBranch, isRemoteBranch } = tBranchInfos[tbranch];
 
         if (!isCurrentBranch) {
           if (!options.remainTargetBranch) {
+            info(`重建目标分支 [${tbranch}] 处理`);
+
             if (isLocalBranch) {
               await execute(`git branch -D ${tbranch}`, { cwd: projectDir });
             }
@@ -374,6 +392,8 @@ export default (command) => {
             await execute(`git checkout -b ${tbranch}`, { cwd: projectDir });
             await execute(`git push --set-upstream origin ${tbranch}`, { cwd: projectDir });
           } else {
+            info(`复用目标分支 [${tbranch}] 处理`);
+
             if (!isLocalBranch && !isRemoteBranch) {
               // 分支不存在
               await execute(`git checkout -b ${tbranch}`, { cwd: projectDir });
@@ -388,12 +408,13 @@ export default (command) => {
         }
 
         for (let [app, gitUrl] of apps) {
+          info(`开始迁移工程 [${app}] 的分支 [${sbranch}] 代码`);
           await migrate(projectDir, app, gitUrl, sbranch);
         }
 
         // update module.xml
         if (options.updateModuleXml) {
-          console.log(chalk.yellow('updating module.xml file'));
+          info(chalk.yellow('updating module.xml file'));
           // 生成module.xml文件
           const code = options.appdir || pkg.name;
           const desc = pkg.description || code;
@@ -438,7 +459,7 @@ export default (command) => {
 
         // update pnpm-workspace.yaml
         if (options.updateWorkspaceYaml) {
-          console.log(chalk.yellow('updating pnpm-workspace.yaml file'));
+          info(chalk.yellow('updating pnpm-workspace.yaml file'));
 
           const file = resolve(projectDir, 'pnpm-workspace.yaml');
           await updateYamlFile(file, (doc) => {
@@ -456,6 +477,7 @@ export default (command) => {
       }
 
       if (needCleanProjectDir) {
+        info(`迁移完毕，清理目录 ${projectDir}`);
         await execute(`shx rm -rf ${projectDir}`);
       }
     });

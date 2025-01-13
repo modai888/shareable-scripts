@@ -233,9 +233,6 @@ export default (command) => {
 
       info(JSON.stringify(tBranchInfos, null, '    '));
 
-      if (options.clean) {
-      }
-
       for (let branch of branchs) {
         const { isCurrentBranch, isLocalBranch, isRemoteBranch } = tBranchInfos[branch] || {};
 
