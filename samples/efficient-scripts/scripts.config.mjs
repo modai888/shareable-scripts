@@ -4,9 +4,10 @@
  * @description 扩展脚本
  */
 import backup_branch from './src/backup-branch.mjs';
+import clean_branch from './src/clean-branch.mjs';
 import migrate_project from './src/migrate-project.mjs';
 import format_project from './src/format-project.mjs';
 
 export default {
-  scripts: [backup_branch, migrate_project, format_project],
+  scripts: [backup_branch, clean_branch, migrate_project, format_project],
 };
