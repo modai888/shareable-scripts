@@ -84,7 +84,7 @@ export default (command) => {
     .version('0.0.1')
     .option('--project-dir <path>', '指定目标工程根目录')
     .option('--project-giturl <giturl>', '指定目标工程仓库地址')
-    .option('--project-migration-base-branch <branch>', '指定目标工程的迁移基准分支', 'main-merge')
+    .option('--project-base-branch <branch>', '指定目标工程的迁移基准分支', 'main-merge')
     .option('-b, --branch <branchs...>', '指定迁移分支', [])
     .option('--app <apps...>', '指定要迁移的工程信息', [])
     .option('--appdir <dir>', '指定代码迁移到的子目录', '')
@@ -123,7 +123,7 @@ export default (command) => {
       }
 
       console.log('--project-giturl', projectGiturl);
-      console.log('--project-migration-branch', options.projectMigrationBaseBranch);
+      console.log('--project-migration-branch', options.projectBaseBranch);
 
       if (!projectDir && projectGiturl) {
         warn(`检测到您指定了--project-giturl "${projectGiturl}" 仓库地址，将尝试克隆仓库代码作为项目目录`);
@@ -262,6 +262,7 @@ export default (command) => {
 
       // 迁移指定工程的指定分支代码
       const migrate = async (projectDir, app, gitUrl, sbranch) => {
+        info(`> [migration] 开始迁移工程 [${app}] 的分支 [${sbranch}] 代码`);
         // 创建应用代码克隆目录
         const tmpGitCloneDir = resolve(tempDir, `${app}_${sbranch}_git`);
         info(`> [migration] 临时代码克隆目录 [${tmpGitCloneDir}]`);
@@ -364,51 +365,69 @@ export default (command) => {
         }
       };
 
-      info('查询工程分支信息');
-      const tbranchs = branchs.map((b) => b[0]);
-      const tBranchInfos = await getBranchInfo(projectDir, tbranchs);
+      let tBranchInfos = null;
+      const tbranchs = [options.projectBaseBranch, ...branchs.map((b) => b[0])];
+      while (!tBranchInfos || !tBranchInfos[options.projectBaseBranch].isCurrentBranch) {
+        info('查询工程分支信息');
+        tBranchInfos = await getBranchInfo(projectDir, tbranchs);
+
+        const baseBranchInfo = tBranchInfos[options.projectBaseBranch];
+        if (!baseBranchInfo.isLocalBranch && !baseBranchInfo.isRemoteBranch) {
+          throw new Error(
+            [
+              `基准迁移分支 [${options.projectBaseBranch}] 不存在，请参考文档创建基准迁移分支后再进行工程合并\n`,
+              '示例：$migrate-project --project-base-branch main-merge',
+              '说明：基准迁移分支用于配置初始化微服务合并的工程信息，请参考文档【MDF工程微服务合并实践-资税项.pdf】',
+            ].join('\n')
+          );
+        }
+
+        if (!baseBranchInfo.isCurrentBranch) {
+          // 切换到迁移基准分支
+          info(`切换到迁移基准分支 [${options.projectBaseBranch}]`);
+          await execute(`git checkout ${options.projectBaseBranch}`, { cwd: projectDir });
+        }
+      }
 
       info(JSON.stringify(tBranchInfos, null, '    '));
-
+      
       for (let [tbranch, sbranch] of branchs) {
         // 切换到迁移基准分支
-        await execute(`git checkout ${options.projectMigrationBaseBranch}`, { cwd: projectDir });
+        info(`切换到迁移基准分支 [${options.projectBaseBranch}]`);
+        await execute(`git checkout ${options.projectBaseBranch}`, { cwd: projectDir });
 
-        info(`开始进行源分支 [${sbranch}] 处理`);
-        const { isCurrentBranch, isLocalBranch, isRemoteBranch } = tBranchInfos[tbranch];
+        info(`开始迁移源分支 [${sbranch}] 处理`);
+        const { isLocalBranch, isRemoteBranch } = tBranchInfos[tbranch];
 
-        if (!isCurrentBranch) {
-          if (!options.remainTargetBranch) {
-            info(`重建目标分支 [${tbranch}] 处理`);
+        if (!options.remainTargetBranch) {
+          info(`重建目标分支 [${tbranch}] 处理`);
 
-            if (isLocalBranch) {
-              await execute(`git branch -D ${tbranch}`, { cwd: projectDir });
-            }
+          if (isLocalBranch) {
+            await execute(`git branch -D ${tbranch}`, { cwd: projectDir });
+          }
 
-            if (isRemoteBranch) {
-              await execute(`git push origin --delete ${tbranch}`, { cwd: projectDir });
-            }
+          if (isRemoteBranch) {
+            await execute(`git push origin --delete ${tbranch}`, { cwd: projectDir });
+          }
 
+          await execute(`git checkout -b ${tbranch}`, { cwd: projectDir });
+          await execute(`git push --set-upstream origin ${tbranch}`, { cwd: projectDir });
+        } else {
+          info(`复用目标分支 [${tbranch}] 处理`);
+
+          if (!isLocalBranch && !isRemoteBranch) {
+            // 分支不存在
             await execute(`git checkout -b ${tbranch}`, { cwd: projectDir });
-            await execute(`git push --set-upstream origin ${tbranch}`, { cwd: projectDir });
           } else {
-            info(`复用目标分支 [${tbranch}] 处理`);
+            await execute(`git checkout ${tbranch}`, { cwd: projectDir });
+          }
 
-            if (!isLocalBranch && !isRemoteBranch) {
-              // 分支不存在
-              await execute(`git checkout -b ${tbranch}`, { cwd: projectDir });
-            } else {
-              await execute(`git checkout ${tbranch}`, { cwd: projectDir });
-            }
-
-            if (isRemoteBranch) {
-              await execute(`git push --set-upstream origin ${tbranch}`, { cwd: projectDir });
-            }
+          if (isRemoteBranch) {
+            await execute(`git push --set-upstream origin ${tbranch}`, { cwd: projectDir });
           }
         }
 
         for (let [app, gitUrl] of apps) {
-          info(`开始迁移工程 [${app}] 的分支 [${sbranch}] 代码`);
           await migrate(projectDir, app, gitUrl, sbranch);
         }
 
@@ -474,6 +493,8 @@ export default (command) => {
             branch: tbranch,
           });
         }
+
+        info(`源分支 [${sbranch}] 迁移完毕`);
       }
 
       if (needCleanProjectDir) {

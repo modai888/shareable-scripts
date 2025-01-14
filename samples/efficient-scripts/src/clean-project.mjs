@@ -1,13 +1,15 @@
 /**
  * @author wangxuebo@yonyou.com
- * @date 2024/12/24
- * @description 代码格式化
+ * @date 2025/01/10
+ * @description 分支清理脚本
  */
 import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import url from 'node:url';
 import chalk from 'chalk';
+import yaml from 'js-yaml';
+import { writeJsonFile } from 'write-json-file';
 import { execaCommand, $, execa } from 'execa';
 
 let __dirname;
@@ -34,6 +36,21 @@ const execute = async (command, options = {}) => {
   });
 };
 
+const updateYamlFile = async (file, updatefn, options = {}) => {
+  try {
+    const doc = yaml.load(fs.readFileSync(file, 'utf8'), options.loadOptions);
+
+    let ret = await updatefn?.(doc);
+
+    ret = ret ?? doc;
+
+    ret = yaml.dump(ret, options.dumpOptions);
+    fs.writeFileSync(file, ret, { flag: 'w', encoding: 'utf8' });
+  } catch (err) {
+    console.error(`Error: update yaml file: `, err.message);
+  }
+};
+
 const readpkg = (file) => {
   const pkg = JSON.parse(
     fs.readFileSync(file, {
@@ -50,18 +67,6 @@ const isValidGitDir = async (dir) => {
   } catch (error) {
     return !/not a git repository/.test(error.message);
   }
-};
-
-// 判断代码是否有修改
-const isCodeModified = async (gitdir) => {
-  const { stdout: status } = await execute(`git status -s`, {
-    stdout: 'pipe',
-    cwd: gitdir,
-  });
-
-  console.log('status', status);
-
-  return status.length > 0;
 };
 
 // 查询分支信息
@@ -100,31 +105,6 @@ const getBranchInfo = async (gitdir, branchs) => {
   }, {});
 };
 
-// 提交代码
-const commit = async (gitdir, commitmsg, options = { force: false, branch: null }) => {
-  // 暂存代码
-  await execute(`git add .`, { cwd: gitdir });
-
-  // 提交代码
-  await execute(`git commit -m "${commitmsg}"`, {
-    cwd: gitdir,
-    shell: true,
-  });
-
-  if (!options.branch) {
-    const o = await execute(`git branch --show-current`, {
-      stdout: 'pipe',
-      cwd: gitdir,
-    });
-    options.branch = o.stdout;
-  }
-
-  // 推送远程
-  await execute(`git push -u origin ${options.branch} ${options.force ? '--force' : ''}`, {
-    cwd: gitdir,
-  });
-};
-
 const warn = (message) => {
   console.log(chalk.yellowBright.bgYellow('[WARNING]', message));
 };
@@ -135,51 +115,21 @@ const info = (message) => {
 
 export default (command) => {
   command
-    .name('$format-project')
-    .description('Formating your project.')
+    .name('$clean-project')
+    .description('Clean branchs of your project')
     .version('0.0.1')
-    .argument('[files...]', 'file/dir/glob ... to format')
-    .option('-b, --branch <branchs...>', '指定格式化分支', [])
     .option('--project-dir <path>', '指定目标工程根目录')
     .option('--project-giturl <giturl>', '指定目标工程仓库地址')
-    .option('--project-base-branch <branch>', '指定目标工程的备份基准分支', 'main-merge')
-    .option('--auto-commit', '是否自动提交代码', true)
-    .option('--no-auto-commit', '禁止自动提交代码')
-    .action(async (files, options, command) => {
+    .option('--project-base-branch <branch>', '指定目标工程的清理基准分支', 'main-merge')
+    .option('-b, --branch <branchs...>', '指定清理分支', [])
+
+    .action(async (options, command) => {
       let needCleanProjectDir = false;
       const cwd = process.cwd();
       const tempDir = os.tmpdir();
       const resolve = (...args) => path.resolve(cwd, ...args);
 
       info('解析工程信息');
-
-      if (files.length == 0) {
-        throw new Error(['请指定要格式化的代码目录\n', '示例:', '      $format-project ./src ./apps'].join('\n'));
-      }
-
-      // 待格式化分支
-      let branchs = options.branch.filter(Boolean);
-      if (branchs.length == 0) {
-        throw new Error(
-          [
-            '参数[--branch]缺失\n',
-            '请使用 --branch 参数指定要迁移的分支',
-            '示例:',
-            '      $format-project --branch=develop --branch=release',
-            '      $format-project --branch develop release',
-          ].join('\n')
-        );
-      }
-
-      if (branchs.includes(options.projectBaseBranch)) {
-        warn('您指定的待格式化分支中包含了基准分支，请移除基准分支');
-        branchs = branchs.filter((b) => b !== options.projectBaseBranch);
-      }
-
-      console.log('--files', files);
-      console.log('--branchs', branchs);
-      console.log('--auto-commit: ', options.autoCommit);
-
       // 指定目标工程目录信息
       let projectDir = options.projectDir;
       let projectGiturl = options.projectGiturl;
@@ -234,14 +184,27 @@ export default (command) => {
 
       console.log('--project-dir', projectDir);
 
-      // 本地有未提交代码，临时存储
-      if (await isCodeModified(projectDir)) {
-        info('暂存本地未提交修改');
-        await execute(`git stash save --all "stash for formating code at ${Date.now()}"`, {
-          shell: true,
-          cwd: projectDir,
-        });
+      //   // 读取工程的包信息
+      //   const pkg = readpkg(resolve(projectDir, 'package.json'));
+
+      // 待迁移分支
+      let branchs = options.branch.filter(Boolean);
+      if (branchs.length == 0) {
+        throw new Error(
+          [
+            '请使用 --branch 参数指定要迁移的分支\n',
+            '示例：$clean-project --branch=target-branch::source-branch --branch=master',
+            '说明：[target-branch]为工程要迁移至的目标工程的分支名称，[source-branch]为待迁移工程要迁移的分支，省略时同[target-branch]',
+          ].join('\n')
+        );
       }
+
+      if (branchs.includes(options.projectBaseBranch)) {
+        warn('您指定的待清理分支中包含了基准分支，请移除基准分支');
+        branchs = branchs.filter((b) => b !== options.projectBaseBranch);
+      }
+
+      console.log('--branchs', branchs);
 
       let tBranchInfos = null;
       const tbranchs = [options.projectBaseBranch, ...branchs];
@@ -255,7 +218,7 @@ export default (command) => {
         }
 
         if (!baseBranchInfo.isCurrentBranch) {
-          // 切换到基准分支
+          // 切换到迁移基准分支
           info(`切换到基准分支 [${options.projectBaseBranch}]`);
           await execute(`git checkout ${options.projectBaseBranch}`, { cwd: projectDir });
         }
@@ -264,70 +227,27 @@ export default (command) => {
       info(JSON.stringify(tBranchInfos, null, '    '));
 
       for (let branch of branchs) {
-        const { isLocalBranch, isRemoteBranch } = tBranchInfos[branch];
+        const { isLocalBranch, isRemoteBranch } = tBranchInfos[branch] || {};
 
         if (!isLocalBranch && !isRemoteBranch) {
-          warn(`分支 "${branch}" 不存在，跳过...`);
+          // 分支不存在，跳过
+          warn(`待清理分支"${branch}"不存在，跳过！`);
           continue;
         }
 
-        // // 拉取分支
-        // if (!isCurrentBranch) {
-        //   info(`${isLocalBranch ? '重新拉取' : '拉取'}待格式化分支 "${branch}"`);
-
-        //   // 删除本地分支，重新拉取（包含最新代码）
-        //   if (isLocalBranch) {
-        //     await execute(`git branch -D ${branch}`, { cwd: projectDir });
-        //   }
-
-        //   await execute(`git checkout ${branch}`, { cwd: projectDir });
-        // }
-
-        // if (isCurrentBranch) {
-        //   // 拉取最新代码
-        //   await execute(`git pull --rebase`, { cwd: projectDir });
-        // }
-
-        info(`${isLocalBranch ? '重新拉取' : '拉取'}待格式化分支 "${branch}"`);
-
-        // 删除本地分支，重新拉取（包含最新代码）
+        // 清理历史清理分支
+        info(`开始清理分支 [${branch}]`);
+        // 删除历史清理
         if (isLocalBranch) {
           await execute(`git branch -D ${branch}`, { cwd: projectDir });
         }
 
-        await execute(`git checkout ${branch}`, { cwd: projectDir });
-
-        // 代码格式化
-        await execute(`npx ctp-fe-scripts format --ignore-unknown --no-error-on-unmatched-pattern ${files.join(' ')}`, {
-          cwd: projectDir,
-          shell: true,
-        });
-
-        // 修复多语抽取问题
-        const params = [];
-        if (fs.existsSync(resolve(projectDir, '.gitignore'))) {
-          params.push('--ignore-config .gitignore');
-        }
-
-        if (fs.existsSync(resolve(projectDir, '.prettierignore'))) {
-          params.push('--ignore-config .prettierignore');
-        }
-
-        await execute(
-          `npx ctp-fe-scripts multilang --fix linebreak2,repeatextraction ${params.join(' ')} ${files.join(' ')}`,
-          { cwd: projectDir }
-        );
-
-        if (options.autoCommit) {
-          const ismodified = await isCodeModified(projectDir);
-          if (!ismodified) continue;
-
-          // 提交代码
-          await commit(projectDir, `refactor: format codes automatically at ${Date.now()}`, {
-            branch,
-          });
+        if (isRemoteBranch) {
+          await execute(`git push origin --delete ${branch}`, { cwd: projectDir });
         }
       }
+
+      info(`清理完毕`);
 
       if (needCleanProjectDir) {
         await execute(`shx rm -rf ${projectDir}`);
